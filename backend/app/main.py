@@ -1,0 +1,247 @@
+"""
+FastAPI Backend Application for BRICS Citizen Infrastructure Intelligence Platform
+As specified in ARCHITECTURE.md
+"""
+
+from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from typing import List, Optional, Dict, Any
+import datetime
+import uvicorn
+
+app = FastAPI(
+    title="BRICS Citizen Infrastructure Intelligence Platform API",
+    description="Digital Public Good bridging grassroots citizen development needs and public infrastructure planning.",
+    version="1.0.0"
+)
+
+# CORS Middleware configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Schemas
+class LocationModel(BaseModel):
+    country: str = "India"
+    state: str = "Gujarat"
+    district: str = "Anand"
+    subdistrict: Optional[str] = "Tarapur"
+    landmark: Optional[str] = "Near Community Health Centre"
+
+class CitizenRequestCreate(BaseModel):
+    originalText: str
+    language: str = "gu"
+    inputType: str = "voice"
+    category: Optional[str] = "healthcare"
+    location: Optional[LocationModel] = None
+
+class CitizenRequestResponse(BaseModel):
+    id: str
+    title: str
+    originalText: str
+    translatedText: str
+    language: str
+    inputType: str
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+    role: Optional[str] = "analyst"
+
+class UserProfile(BaseModel):
+    email: str
+    role: str
+    name: str
+    title: str
+    department: str
+    country: str
+    avatar: str
+
+class LoginResponse(BaseModel):
+    success: bool
+    token: str
+    user: UserProfile
+
+DEMO_USERS = {
+    "analyst@brics.gov": {
+        "password": "analyst123",
+        "role": "analyst",
+        "name": "Dr. Rajesh Verma",
+        "title": "Senior Infrastructure Planning Analyst",
+        "department": "Gujarat State Infrastructure Planning Board",
+        "country": "India",
+        "avatar": "👨‍💼"
+    },
+    "admin@brics.gov": {
+        "password": "admin123",
+        "role": "admin",
+        "name": "Elena Rostova",
+        "title": "Chief Model Governance & Systems Architect",
+        "department": "BRICS Digital Public Infrastructure Authority",
+        "country": "BRICS Secretariat",
+        "avatar": "👩‍💻"
+    }
+}
+
+# In-Memory seed database matching PRD Section 12
+DEMO_REQUESTS = [
+    {
+        "id": "REQ-8492",
+        "title": "Rural Healthcare & Tarapur CHC Emergency Road Connectivity",
+        "originalText": "અમારા ગામ તારાપુરથી સામુહિક આરોગ્ય કેન્દ્ર સુધીનો રસ્તો ચોમાસામાં તૂટી ગયો છે, દર્દીઓ અને એમ્બ્યુલન્સ સમયસર હોસ્પિટલ પહોંચી શકતા નથી.",
+        "translatedText": "The road from our Tarapur village to the Community Health Centre is broken since the monsoon, patients and ambulances cannot reach the hospital in time.",
+        "language": "gu",
+        "inputType": "voice",
+        "category": "healthcare",
+        "urgency": "Critical",
+        "confidenceScore": 0.96,
+        "location": {
+            "country": "India",
+            "state": "Gujarat",
+            "district": "Anand",
+            "subdistrict": "Tarapur",
+            "landmark": "Near Tarapur CHC Junction"
+        },
+        "affectedPopulation": 42000,
+        "createdAt": "2026-09-20T08:14:00Z",
+        "status": "Prioritized in Hotspot"
+    }
+]
+
+@app.get("/")
+def root():
+    return {
+        "platform": "BRICS Citizen Infrastructure Intelligence Platform",
+        "status": "online",
+        "version": "1.0.0",
+        "docs": "/docs"
+    }
+
+@app.get("/api/health")
+def health_check():
+    return {"status": "healthy", "timestamp": datetime.datetime.utcnow().isoformat()}
+
+# Authentication Endpoint
+@app.post("/api/auth/login")
+def login(req: LoginRequest):
+    email = req.email.strip().lower()
+    user = DEMO_USERS.get(email)
+    if user and user["password"] == req.password:
+        return {
+            "success": True,
+            "token": f"jwt_brics_token_{int(datetime.datetime.utcnow().timestamp())}",
+            "user": {
+                "email": email,
+                "role": user["role"],
+                "name": user["name"],
+                "title": user["title"],
+                "department": user["department"],
+                "country": user["country"],
+                "avatar": user["avatar"]
+            }
+        }
+    return {"success": False, "error": "Invalid email or password"}
+
+# Requests Endpoints
+@app.get("/api/requests", response_model=List[Dict[str, Any]])
+def get_requests(category: Optional[str] = None, urgency: Optional[str] = None):
+    results = DEMO_REQUESTS
+    if category and category != "all":
+        results = [r for r in results if r.get("category") == category]
+    if urgency and urgency != "all":
+        results = [r for r in results if r.get("urgency") == urgency]
+    return results
+
+@app.get("/api/requests/{request_id}")
+def get_request_by_id(request_id: str):
+    for r in DEMO_REQUESTS:
+        if r["id"].lower() == request_id.lower():
+            return r
+    return {"error": "Request not found", "id": request_id}
+
+@app.post("/api/requests")
+def create_request(req: CitizenRequestCreate):
+    new_id = f"REQ-{len(DEMO_REQUESTS) + 8493}"
+    translated = req.originalText
+    if req.language == "gu" and ("તારાપુર" in req.originalText or "આરોગ્ય" in req.originalText):
+        translated = "The road from our Tarapur village to the Community Health Centre is broken since the monsoon, patients and ambulances cannot reach the hospital in time."
+
+    record = {
+        "id": new_id,
+        "title": req.originalText[:50] + ("..." if len(req.originalText) > 50 else ""),
+        "originalText": req.originalText,
+        "translatedText": translated,
+        "language": req.language,
+        "inputType": req.inputType,
+        "category": req.category or "healthcare",
+        "urgency": "Critical" if "આરોગ્ય" in req.originalText or "emergency" in req.originalText.lower() else "High",
+        "confidenceScore": 0.95,
+        "location": req.location.dict() if req.location else {"country": "India", "state": "Gujarat", "district": "Anand"},
+        "affectedPopulation": 35000,
+        "createdAt": datetime.datetime.utcnow().isoformat(),
+        "status": "Submitted & Analyzed"
+    }
+    DEMO_REQUESTS.insert(0, record)
+    return record
+
+# Speech-to-Text Endpoint
+@app.post("/api/voice/transcribe")
+async def transcribe_voice(audio: UploadFile = File(...), language: str = Form("gu")):
+    return {
+        "transcript": "અમારા ગામ તારાપુરથી સામુહિક આરોગ્ય કેન્દ્ર સુધીનો રસ્તો ચોમાસામાં તૂટી ગયો છે, દર્દીઓ અને એમ્બ્યુલન્સ સમયસર હોસ્પિટલ પહોંચી શકતા નથી.",
+        "detectedLanguage": language,
+        "confidence": 0.96,
+        "duration": "0:22"
+    }
+
+# Dashboard Analytics
+@app.get("/api/dashboard/summary")
+def get_dashboard_summary():
+    return {
+        "totalRequests": len(DEMO_REQUESTS) + 183,
+        "activeHotspots": 5,
+        "infrastructureGapsIdentified": 14,
+        "projectsTracked": 4,
+        "populationImpacted": 242000,
+        "averageConfidence": 0.95
+    }
+
+@app.get("/api/dashboard/hotspots")
+def get_dashboard_hotspots():
+    return [
+        {
+            "id": "HOT-101",
+            "name": "Anand South Rural Corridor",
+            "district": "Anand",
+            "severity": "critical",
+            "requestCount": 184,
+            "affectedPopulation": 74000,
+            "dominantCategory": "healthcare"
+        }
+    ]
+
+@app.get("/api/recommendations")
+def get_recommendations():
+    return [
+        {
+            "id": "INS-01",
+            "title": "Rural Healthcare Connectivity & All-Weather Road Upgrade",
+            "district": "Anand",
+            "category": "healthcare",
+            "decisionScore": 94,
+            "status": "Recommended for Tender",
+            "metrics": {
+                "citizenRequests": 1842,
+                "affectedPopulation": 74000,
+                "infrastructureGapPct": 82,
+                "existingInvestment": "Low"
+            }
+        }
+    ]
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
