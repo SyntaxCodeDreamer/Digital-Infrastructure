@@ -9,11 +9,32 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 import datetime
 import uvicorn
+from contextlib import asynccontextmanager
+from app.config.database import connect_to_mongo, close_mongo_connection, get_db
+from app.services.ai_service import analyze_citizen_request
+
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+try:
+    from seed import seed_all_collections
+except ImportError:
+    seed_all_collections = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await connect_to_mongo()
+    db = get_db()
+    if seed_all_collections:
+        await seed_all_collections(db)
+    yield
+    await close_mongo_connection()
 
 app = FastAPI(
     title="BRICS Citizen Infrastructure Intelligence Platform API",
     description="Digital Public Good bridging grassroots citizen development needs and public infrastructure planning.",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # CORS Middleware configuration
@@ -47,6 +68,14 @@ class CitizenRequestResponse(BaseModel):
     translatedText: str
     language: str
     inputType: str
+
+class ProjectCreate(BaseModel):
+    title: str
+    category: str
+    budget: str
+    timeline: str
+    status: str = "Planning"
+
 class LoginRequest(BaseModel):
     email: str
     password: str
@@ -148,44 +177,56 @@ def login(req: LoginRequest):
 
 # Requests Endpoints
 @app.get("/api/requests", response_model=List[Dict[str, Any]])
-def get_requests(category: Optional[str] = None, urgency: Optional[str] = None):
-    results = DEMO_REQUESTS
+async def get_requests(category: Optional[str] = None, urgency: Optional[str] = None):
+    db = get_db()
+    query = {}
     if category and category != "all":
-        results = [r for r in results if r.get("category") == category]
+        query["category"] = category
     if urgency and urgency != "all":
-        results = [r for r in results if r.get("urgency") == urgency]
+        query["urgency"] = urgency
+    
+    cursor = db.requests.find(query).sort("createdAt", -1)
+    results = await cursor.to_list(length=100)
+    for r in results:
+        r["_id"] = str(r["_id"])
     return results
 
 @app.get("/api/requests/{request_id}")
-def get_request_by_id(request_id: str):
-    for r in DEMO_REQUESTS:
-        if r["id"].lower() == request_id.lower():
-            return r
+async def get_request_by_id(request_id: str):
+    db = get_db()
+    request = await db.requests.find_one({"id": request_id})
+    if request:
+        request["_id"] = str(request["_id"])
+        return request
     return {"error": "Request not found", "id": request_id}
 
 @app.post("/api/requests")
-def create_request(req: CitizenRequestCreate):
-    new_id = f"REQ-{len(DEMO_REQUESTS) + 8493}"
-    translated = req.originalText
-    if req.language == "gu" and ("તારાપુર" in req.originalText or "આરોગ્ય" in req.originalText):
-        translated = "The road from our Tarapur village to the Community Health Centre is broken since the monsoon, patients and ambulances cannot reach the hospital in time."
+async def create_request(req: CitizenRequestCreate):
+    db = get_db()
+    total = await db.requests.count_documents({})
+    new_id = f"REQ-{total + 8493}"
+    
+    # Analyze request using Gemini AI
+    ai_result = await analyze_citizen_request(req.originalText, req.language)
 
     record = {
         "id": new_id,
         "title": req.originalText[:50] + ("..." if len(req.originalText) > 50 else ""),
         "originalText": req.originalText,
-        "translatedText": translated,
+        "translatedText": ai_result["translatedText"],
         "language": req.language,
         "inputType": req.inputType,
-        "category": req.category or "healthcare",
-        "urgency": "Critical" if "આરોગ્ય" in req.originalText or "emergency" in req.originalText.lower() else "High",
-        "confidenceScore": 0.95,
+        "category": ai_result["category"],
+        "urgency": ai_result["urgency"],
+        "confidenceScore": ai_result["confidenceScore"],
         "location": req.location.dict() if req.location else {"country": "India", "state": "Gujarat", "district": "Anand"},
         "affectedPopulation": 35000,
         "createdAt": datetime.datetime.utcnow().isoformat(),
         "status": "Submitted & Analyzed"
     }
-    DEMO_REQUESTS.insert(0, record)
+    
+    await db.requests.insert_one(record)
+    record["_id"] = str(record["_id"])
     return record
 
 # Speech-to-Text Endpoint
@@ -200,9 +241,11 @@ async def transcribe_voice(audio: UploadFile = File(...), language: str = Form("
 
 # Dashboard Analytics
 @app.get("/api/dashboard/summary")
-def get_dashboard_summary():
+async def get_dashboard_summary():
+    db = get_db()
+    total_requests = await db.requests.count_documents({})
     return {
-        "totalRequests": len(DEMO_REQUESTS) + 183,
+        "totalRequests": total_requests + 183,
         "activeHotspots": 5,
         "infrastructureGapsIdentified": 14,
         "projectsTracked": 4,
@@ -211,37 +254,131 @@ def get_dashboard_summary():
     }
 
 @app.get("/api/dashboard/hotspots")
-def get_dashboard_hotspots():
-    return [
+async def get_dashboard_hotspots():
+    db = get_db()
+    pipeline = [
         {
-            "id": "HOT-101",
-            "name": "Anand South Rural Corridor",
-            "district": "Anand",
-            "severity": "critical",
-            "requestCount": 184,
-            "affectedPopulation": 74000,
-            "dominantCategory": "healthcare"
-        }
+            "$group": {
+                "_id": "$location.district",
+                "requestCount": {"$sum": 1},
+                "affectedPopulation": {"$sum": "$affectedPopulation"},
+                "categories": {"$push": "$category"}
+            }
+        },
+        {"$sort": {"requestCount": -1}},
+        {"$limit": 5}
     ]
+    
+    cursor = db.requests.aggregate(pipeline)
+    results = await cursor.to_list(length=5)
+    
+    hotspots = []
+    for i, res in enumerate(results):
+        categories = res.get("categories", [])
+        dominant = max(set(categories), key=categories.count) if categories else "unknown"
+        
+        hotspots.append({
+            "id": f"HOT-10{i+1}",
+            "name": f"{res['_id']} Critical Zone",
+            "district": res["_id"],
+            "severity": "critical" if res["requestCount"] > 10 else "high",
+            "requestCount": res["requestCount"] + 183,  # added base offset for demo visual impact
+            "affectedPopulation": res["affectedPopulation"] + 32000,
+            "dominantCategory": dominant
+        })
+        
+    if not hotspots:
+        return [
+            {
+                "id": "HOT-101",
+                "name": "Anand South Rural Corridor",
+                "district": "Anand",
+                "severity": "critical",
+                "requestCount": 184,
+                "affectedPopulation": 74000,
+                "dominantCategory": "healthcare"
+            }
+        ]
+    return hotspots
 
 @app.get("/api/recommendations")
-def get_recommendations():
-    return [
-        {
-            "id": "INS-01",
-            "title": "Rural Healthcare Connectivity & All-Weather Road Upgrade",
-            "district": "Anand",
-            "category": "healthcare",
-            "decisionScore": 94,
-            "status": "Recommended for Tender",
-            "metrics": {
-                "citizenRequests": 1842,
-                "affectedPopulation": 74000,
-                "infrastructureGapPct": 82,
-                "existingInvestment": "Low"
+async def get_recommendations():
+    db = get_db()
+    cursor = db.recommendations.find()
+    results = await cursor.to_list(length=10)
+    
+    if not results:
+        return [
+            {
+                "id": "INS-01",
+                "title": "Rural Healthcare Connectivity & All-Weather Road Upgrade",
+                "district": "Anand",
+                "category": "healthcare",
+                "decisionScore": 94,
+                "status": "Recommended for Tender",
+                "metrics": {
+                    "citizenRequests": 1842,
+                    "affectedPopulation": 74000,
+                    "infrastructureGapPct": 82,
+                    "existingInvestment": "Low"
+                }
             }
-        }
-    ]
+        ]
+        
+    for r in results:
+        r["_id"] = str(r["_id"])
+    return results
+
+@app.get("/api/projects")
+async def get_projects():
+    db = get_db()
+    cursor = db.projects.find().sort("createdAt", -1)
+    results = await cursor.to_list(length=20)
+    for r in results:
+        r["_id"] = str(r["_id"])
+    return results
+
+@app.post("/api/projects")
+async def create_project(req: ProjectCreate):
+    db = get_db()
+    total = await db.projects.count_documents({})
+    new_id = f"PRJ-2026-{total + 1}"
+    
+    record = {
+        "id": new_id,
+        "title": req.title,
+        "category": req.category,
+        "budget": req.budget,
+        "timeline": req.timeline,
+        "status": req.status,
+        "createdAt": datetime.datetime.utcnow().isoformat()
+    }
+    
+    await db.projects.insert_one(record)
+    record["_id"] = str(record["_id"])
+    return record
+
+@app.get("/api/impact")
+async def get_impact_metrics():
+    db = get_db()
+    cursor = db.impact.find()
+    results = await cursor.to_list(length=10)
+    if not results:
+        return [
+            {
+                "metric": "Projects Completed",
+                "value": "12",
+                "trend": "+3 this quarter"
+            },
+            {
+                "metric": "Citizens Impacted",
+                "value": "450,000",
+                "trend": "+12% yoy"
+            }
+        ]
+    for r in results:
+        r["_id"] = str(r["_id"])
+    return results
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

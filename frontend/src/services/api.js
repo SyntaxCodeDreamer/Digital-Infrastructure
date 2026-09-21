@@ -155,6 +155,14 @@ export const api = {
 
   // Dashboard APIs
   getDashboardSummary: async () => {
+    if (API_BASE) {
+      try {
+        const res = await fetch(`${API_BASE}/api/dashboard/summary`);
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn('API error:', err);
+      }
+    }
     const requests = storageService.getRequests();
     const hotspots = storageService.getHotspots();
     const projects = storageService.getProjects();
@@ -176,22 +184,83 @@ export const api = {
   },
 
   getHotspots: async () => {
+    if (API_BASE) {
+      try {
+        const res = await fetch(`${API_BASE}/api/dashboard/hotspots`);
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn('API error:', err);
+      }
+    }
     return storageService.getHotspots();
   },
 
   getRecommendations: async () => {
+    if (API_BASE) {
+      try {
+        const res = await fetch(`${API_BASE}/api/recommendations`);
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn('API error:', err);
+      }
+    }
     return storageService.getInsights();
   },
 
   getProjects: async () => {
+    if (API_BASE) {
+      try {
+        const res = await fetch(`${API_BASE}/api/projects`);
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn('API error:', err);
+      }
+    }
     return storageService.getProjects();
   },
 
   createProject: async (insightId) => {
+    if (API_BASE) {
+      let recommendation;
+      try {
+        const recRes = await fetch(`${API_BASE}/api/recommendations`);
+        if (recRes.ok) {
+           const recs = await recRes.json();
+           recommendation = recs.find(r => r.id === insightId);
+        }
+      } catch (e) {}
+      
+      const payload = {
+        title: recommendation?.title || "New Infrastructure Project",
+        category: recommendation?.category || "general",
+        budget: "TBD",
+        timeline: "12-18 Months",
+        status: "Planning"
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/api/projects`, {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify(payload)
+        });
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn('API error:', err);
+      }
+    }
     return storageService.createProjectFromInsight(insightId);
   },
 
   getImpactMetrics: async () => {
+    if (API_BASE) {
+      try {
+        const res = await fetch(`${API_BASE}/api/impact`);
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn('API error:', err);
+      }
+    }
     return storageService.getImpactMetrics();
   },
 

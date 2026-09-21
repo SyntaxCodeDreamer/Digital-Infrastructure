@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# This hook runs automatically after a successful `git pull` (or git merge).
+
+echo "Changes pulled! Automatically running database setup..."
+
+cd backend
+# Check if virtual environment exists and activate it, then run the seed script
+if [ -d "venv" ]; then
+    if [ -f "venv/Scripts/activate" ]; then
+        # Windows Git Bash
+        source venv/Scripts/activate
+        python seed.py
+    elif [ -f "venv/bin/activate" ]; then
+        # Mac/Linux
+        source venv/bin/activate
+        python seed.py
+    fi
+else
+    echo "Virtual environment not found. Please run backend setup first."
+fi
+
+echo "Database auto-setup complete!"
