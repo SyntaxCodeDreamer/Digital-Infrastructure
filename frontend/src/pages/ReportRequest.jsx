@@ -17,9 +17,9 @@ import { api } from '../services/api';
 import { detectLanguage, classifyRequest, extractUrgency } from '../services/aiService';
 import { translate } from '../services/i18n';
 
-export const ReportRequest = ({ onNavigateToTrack, currentLang = 'en' }) => {
+export const ReportRequest = ({ onNavigateToTrack, currentLang = 'en', setCurrentLang }) => {
   const [inputMode, setInputMode] = useState('voice'); // 'voice' or 'text'
-  const [selectedLang, setSelectedLang] = useState('gu');
+  const [selectedLang, setSelectedLang] = useState(currentLang);
   const [textInput, setTextInput] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('Anand');
   const [subdistrict, setSubdistrict] = useState('Tarapur');
@@ -125,7 +125,18 @@ export const ReportRequest = ({ onNavigateToTrack, currentLang = 'en' }) => {
               <label className="input-label">{translate('Preferred Citizen Language', currentLang)}</label>
               <select
                 value={selectedLang}
-                onChange={(e) => setSelectedLang(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSelectedLang(val);
+                  if (setCurrentLang) {
+                    setCurrentLang(val);
+                    const select = document.querySelector('.goog-te-combo');
+                    if (select) {
+                      select.value = val;
+                      select.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                  }
+                }}
                 className="select-control"
               >
                 {INDIAN_LANGUAGES.map(lang => (

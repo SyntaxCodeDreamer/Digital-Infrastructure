@@ -279,6 +279,11 @@ export const Navbar = ({
                     onClick={() => {
                       setCurrentLang(lang.code);
                       setLangDropdownOpen(false);
+                      const select = document.querySelector('.goog-te-combo');
+                      if (select) {
+                        select.value = lang.code;
+                        select.dispatchEvent(new Event('change', { bubbles: true }));
+                      }
                     }}
                     className="btn btn-secondary btn-sm"
                     style={{

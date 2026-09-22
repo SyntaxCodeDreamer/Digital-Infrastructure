@@ -149,7 +149,7 @@ function App() {
           />
         );
       case 'report':
-        return <ReportRequest onNavigateToTrack={handleNavigateToTrack} currentLang={currentLang} />;
+        return <ReportRequest onNavigateToTrack={handleNavigateToTrack} currentLang={currentLang} setCurrentLang={setCurrentLang} />;
       case 'track':
         return <TrackRequest initialRequestId={trackedRequestId} onOpenProject={handleOpenProject} currentLang={currentLang} />;
       case 'public-projects':

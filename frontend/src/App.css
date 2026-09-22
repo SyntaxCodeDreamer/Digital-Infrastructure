@@ -357,3 +357,9 @@
 body { top: 0 !important; }
 .skiptranslate { display: none !important; }
 
+
+body { top: 0px !important; position: static !important; }
+.goog-te-banner-frame { display: none !important; }
+.goog-te-balloon-frame { display: none !important; }
+font { background-color: transparent !important; box-shadow: none !important; }
+
