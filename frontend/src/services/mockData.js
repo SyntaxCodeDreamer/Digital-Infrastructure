@@ -13,14 +13,19 @@ export const CATEGORIES = [
   { id: 'other', label: 'Other Civic Infrastructure', icon: 'Layers', color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.15)' },
 ];
 
-export const BRICS_LANGUAGES = [
-  { code: 'gu', name: 'ગુજરાતી (Gujarati)', flag: '🇮🇳' },
+export const INDIAN_LANGUAGES = [
+  { code: 'en', name: 'English', flag: '🌐' },
   { code: 'hi', name: 'हिन्दी (Hindi)', flag: '🇮🇳' },
-  { code: 'en', name: 'English (BRICS Common)', flag: '🌐' },
-  { code: 'pt', name: 'Português (Brazil)', flag: '🇧🇷' },
-  { code: 'ru', name: 'Русский (Russia)', flag: '🇷🇺' },
-  { code: 'zh', name: '中文 (China)', flag: '🇨🇳' },
-  { code: 'zu', name: 'isiZulu / EN (South Africa)', flag: '🇿🇦' },
+  { code: 'gu', name: 'ગુજરાતી (Gujarati)', flag: '🇮🇳' },
+  { code: 'mr', name: 'मराठी (Marathi)', flag: '🇮🇳' },
+  { code: 'bn', name: 'বাংলা (Bengali)', flag: '🇮🇳' },
+  { code: 'ta', name: 'தமிழ் (Tamil)', flag: '🇮🇳' },
+  { code: 'te', name: 'తెలుగు (Telugu)', flag: '🇮🇳' },
+  { code: 'kn', name: 'ಕನ್ನಡ (Kannada)', flag: '🇮🇳' },
+  { code: 'ml', name: 'മലയാളം (Malayalam)', flag: '🇮🇳' },
+  { code: 'or', name: 'ଓଡ଼ିଆ (Odia)', flag: '🇮🇳' },
+  { code: 'pa', name: 'ਪੰਜਾਬੀ (Punjabi)', flag: '🇮🇳' },
+  { code: 'as', name: 'অসমীয়া (Assamese)', flag: '🇮🇳' }
 ];
 
 export const DISTRICTS_DATA = [

@@ -11,7 +11,7 @@ import {
   Clock,
   Compass
 } from 'lucide-react';
-import { CATEGORIES, BRICS_LANGUAGES, DISTRICTS_DATA } from '../services/mockData';
+import { CATEGORIES, INDIAN_LANGUAGES, DISTRICTS_DATA } from '../services/mockData';
 import { AudioRecorder } from '../components/AudioRecorder';
 import { api } from '../services/api';
 import { detectLanguage, classifyRequest, extractUrgency } from '../services/aiService';
@@ -127,7 +127,7 @@ export const ReportRequest = ({ onNavigateToTrack }) => {
                 onChange={(e) => setSelectedLang(e.target.value)}
                 className="select-control"
               >
-                {BRICS_LANGUAGES.map(lang => (
+                {INDIAN_LANGUAGES.map(lang => (
                   <option key={lang.code} value={lang.code}>
                     {lang.flag} {lang.name}
                   </option>

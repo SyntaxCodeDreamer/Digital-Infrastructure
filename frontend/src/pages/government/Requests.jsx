@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Download, Eye, Layers, Sparkles, Volume2 } from 'lucide-react';
-import { CATEGORIES, BRICS_LANGUAGES, DISTRICTS_DATA } from '../../services/mockData';
+import { CATEGORIES, INDIAN_LANGUAGES, DISTRICTS_DATA } from '../../services/mockData';
 import { RequestDetailModal } from '../../components/RequestDetailModal';
 import { api } from '../../services/api';
 import { storageService } from '../../services/storageService';
@@ -115,7 +115,7 @@ export const Requests = ({ onNavigate }) => {
 
           <select value={selectedLang} onChange={(e) => setSelectedLang(e.target.value)} className="select-control">
             <option value="all">All Languages</option>
-            {BRICS_LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.flag} {l.name.split(' ')[0]}</option>)}
+            {INDIAN_LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.flag} {l.name.split(' ')[0]}</option>)}
           </select>
 
           <select value={selectedDistrict} onChange={(e) => setSelectedDistrict(e.target.value)} className="select-control">

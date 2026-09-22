@@ -20,8 +20,9 @@ import { RequestDetailModal } from '../../components/RequestDetailModal';
 import { CATEGORIES } from '../../services/mockData';
 import { api } from '../../services/api';
 import { storageService } from '../../services/storageService';
+import { translate } from '../../services/i18n';
 
-export const Dashboard = ({ onNavigate, onOpenProject }) => {
+export const Dashboard = ({ onNavigate, onOpenProject, currentLang = 'en' }) => {
   const [summary, setSummary] = useState(null);
   const [hotspots, setHotspots] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -57,16 +58,16 @@ export const Dashboard = ({ onNavigate, onOpenProject }) => {
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <span className="badge badge-blue">Executive Intelligence Hub</span>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Regional Node: Western India (BRICS Pilot)</span>
+            <span className="badge badge-blue">{translate('Executive Intelligence Hub', currentLang)}</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{translate('Regional Node: Western India (BRICS Pilot)', currentLang)}</span>
           </div>
-          <h2 style={{ fontSize: '1.85rem' }}>Government Planning Dashboard</h2>
+          <h2 style={{ fontSize: '1.85rem' }}>{translate('Government Planning Dashboard', currentLang)}</h2>
         </div>
 
         <div style={{ display: 'flex', gap: '12px' }}>
           <button onClick={() => onNavigate('gov-recommendations')} className="btn btn-primary btn-sm" style={{ gap: '6px' }}>
             <Sparkles size={16} />
-            <span>Review AI Project Insights ({insights.length})</span>
+            <span>{translate('Review AI Project Insights', currentLang)} ({insights.length})</span>
           </button>
         </div>
       </div>
@@ -74,7 +75,7 @@ export const Dashboard = ({ onNavigate, onOpenProject }) => {
       {/* Top 5 KPI Cards (DESIGN.md Section 5) */}
       <div className="grid-cols-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
         <StatCard
-          title="Total Citizen Requests"
+          title={translate('Total Citizen Requests', currentLang)}
           value={summary?.totalRequests || 184}
           trend="+14% this month"
           subtitle="96% classified with high confidence"
@@ -83,7 +84,7 @@ export const Dashboard = ({ onNavigate, onOpenProject }) => {
           onClick={() => onNavigate('gov-requests')}
         />
         <StatCard
-          title="Active Demand Hotspots"
+          title={translate('Active Demand Hotspots', currentLang)}
           value={summary?.activeHotspots || 5}
           trend="1 Critical Alert"
           subtitle="Anand South Rural Corridor highest"
@@ -92,7 +93,7 @@ export const Dashboard = ({ onNavigate, onOpenProject }) => {
           onClick={() => onNavigate('gov-hotspots')}
         />
         <StatCard
-          title="Infrastructure Gaps"
+          title={translate('Infrastructure Gaps', currentLang)}
           value={summary?.infrastructureGapsIdentified || 14}
           trend="82% Peak Deficit"
           subtitle="Road & Healthcare connectivity"
@@ -101,7 +102,7 @@ export const Dashboard = ({ onNavigate, onOpenProject }) => {
           onClick={() => onNavigate('gov-gaps')}
         />
         <StatCard
-          title="Active Projects Funded"
+          title={translate('Active Projects Funded', currentLang)}
           value={summary?.projectsTracked || 4}
           trend="$10.3M Allocated"
           subtitle="1 Completed, 2 In Progress"
@@ -110,7 +111,7 @@ export const Dashboard = ({ onNavigate, onOpenProject }) => {
           onClick={() => onNavigate('gov-projects')}
         />
         <StatCard
-          title="Population Impacted"
+          title={translate('Population Impacted', currentLang)}
           value={summary ? `${(summary.populationImpacted / 1000).toFixed(0)}k+` : '242k+'}
           trend="+46k this quarter"
           subtitle="Verified by post-project census"
@@ -142,10 +143,10 @@ export const Dashboard = ({ onNavigate, onOpenProject }) => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Lightbulb size={20} color="var(--accent-cyan)" />
-              <h3 style={{ fontSize: '1.25rem' }}>Top AI-Generated Project Insights</h3>
+              <h3 style={{ fontSize: '1.25rem' }}>{translate('Top AI-Generated Project Insights', currentLang)}</h3>
             </div>
             <button onClick={() => onNavigate('gov-recommendations')} className="btn btn-secondary btn-sm">
-              View All ({insights.length})
+              {translate('View All', currentLang)} ({insights.length})
             </button>
           </div>
 
@@ -164,7 +165,7 @@ export const Dashboard = ({ onNavigate, onOpenProject }) => {
         <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '1.25rem' }}>Citizen Demand by Sector</h3>
+              <h3 style={{ fontSize: '1.25rem' }}>{translate('Citizen Demand by Sector', currentLang)}</h3>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Cross-BRICS Classification</span>
             </div>
 
@@ -204,11 +205,11 @@ export const Dashboard = ({ onNavigate, onOpenProject }) => {
       <div className="glass-panel" style={{ padding: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
           <div>
-            <h3 style={{ fontSize: '1.25rem' }}>Recent Ingested Requests</h3>
+            <h3 style={{ fontSize: '1.25rem' }}>{translate('Recent Ingested Requests', currentLang)}</h3>
             <p style={{ fontSize: '0.85rem' }}>Multilingual submissions processed by speech & translation services</p>
           </div>
           <button onClick={() => onNavigate('gov-requests')} className="btn btn-secondary btn-sm" style={{ gap: '6px' }}>
-            <span>View Full Requests Hub</span>
+            <span>{translate('View Full Requests Hub', currentLang)}</span>
             <ArrowRight size={14} />
           </button>
         </div>

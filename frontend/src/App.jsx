@@ -158,7 +158,7 @@ function App() {
 
       // Government Views (Protected)
       case 'gov-dashboard':
-        return <Dashboard onNavigate={handleProtectedNavigate} onOpenProject={handleOpenProject} />;
+        return <Dashboard onNavigate={handleProtectedNavigate} onOpenProject={handleOpenProject} currentLang={currentLang} />;
       case 'gov-requests':
         return <Requests onNavigate={handleProtectedNavigate} />;
       case 'gov-hotspots':

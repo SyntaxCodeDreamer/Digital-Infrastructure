@@ -14,7 +14,7 @@ import {
   Layers,
   FileCheck
 } from 'lucide-react';
-import { BRICS_LANGUAGES } from '../services/mockData';
+import { INDIAN_LANGUAGES } from '../services/mockData';
 
 export const Home = ({ onNavigate, onTestScenario }) => {
   return (
@@ -84,7 +84,7 @@ export const Home = ({ onNavigate, onTestScenario }) => {
                 7
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
-                BRICS Languages Supported
+                Indian Languages Supported
               </div>
             </div>
             <div>
@@ -232,7 +232,7 @@ export const Home = ({ onNavigate, onTestScenario }) => {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '14px' }}>
-            {BRICS_LANGUAGES.map(lang => (
+            {INDIAN_LANGUAGES.map(lang => (
               <div
                 key={lang.code}
                 style={{

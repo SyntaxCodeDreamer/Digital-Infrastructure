@@ -21,7 +21,7 @@ import {
   LogOut,
   User
 } from 'lucide-react';
-import { BRICS_LANGUAGES } from '../services/mockData';
+import { INDIAN_LANGUAGES } from '../services/mockData';
 import { storageService } from '../services/storageService';
 
 export const Navbar = ({ 
@@ -272,7 +272,7 @@ export const Navbar = ({
                 <div style={{ padding: '6px 10px', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
                   SELECT LANGUAGE
                 </div>
-                {BRICS_LANGUAGES.map(lang => (
+                {INDIAN_LANGUAGES.map(lang => (
                   <button
                     key={lang.code}
                     onClick={() => {
