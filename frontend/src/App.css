@@ -353,3 +353,7 @@
 .audio-player-pill:hover {
   background: rgba(59, 130, 246, 0.2);
 }
+
+body { top: 0 !important; }
+.skiptranslate { display: none !important; }
+
