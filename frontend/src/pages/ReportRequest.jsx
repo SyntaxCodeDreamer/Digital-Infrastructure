@@ -167,7 +167,7 @@ export const ReportRequest = ({ onNavigateToTrack, currentLang = 'en', setCurren
                 className="select-control"
               >
                 {INDIAN_LANGUAGES.map(lang => (
-                  <option key={lang.code} value={lang.code}>
+                  <option key={lang.code} value={lang.code} className="notranslate">
                     {lang.flag} {lang.name}
                   </option>
                 ))}

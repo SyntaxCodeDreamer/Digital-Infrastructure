@@ -295,7 +295,7 @@ export const Navbar = ({
                     }}
                   >
                     <span>{lang.flag}</span>
-                    <span style={{ fontSize: '0.82rem' }}>{lang.name}</span>
+                    <span style={{ fontSize: '0.82rem' }} className="notranslate">{lang.name}</span>
                   </button>
                 ))}
               </div>

@@ -8,6 +8,22 @@ export const AudioRecorder = ({ onRecordingComplete, selectedLanguage = 'gu' }) 
   const [recordingTime, setRecordingTime] = useState(0);
   const [demoLoaded, setDemoLoaded] = useState(false);
 
+  const langNameMap = {
+    'hi': 'Hindi',
+    'gu': 'Gujarati',
+    'mr': 'Marathi',
+    'bn': 'Bengali',
+    'ta': 'Tamil',
+    'te': 'Telugu',
+    'kn': 'Kannada',
+    'ml': 'Malayalam',
+    'or': 'Odia',
+    'pa': 'Punjabi',
+    'as': 'Assamese',
+    'en': 'English'
+  };
+  const currentLangName = langNameMap[selectedLanguage] || 'Local';
+
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const canvasRef = useRef(null);
@@ -173,7 +189,7 @@ export const AudioRecorder = ({ onRecordingComplete, selectedLanguage = 'gu' }) 
           </div>
         ) : (
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            Speak in your native language (Gujarati, Hindi, English, etc.)
+            Speak in your native language ({currentLangName} preferred)
           </span>
         )}
       </div>
@@ -193,7 +209,7 @@ export const AudioRecorder = ({ onRecordingComplete, selectedLanguage = 'gu' }) 
               title="Load PRD Section 12 Gujarati hospital-road voice sample"
             >
               <Sparkles size={18} />
-              <span>Load Gujarati Demo Voice (PRD)</span>
+              <span>Load {currentLangName} Demo Voice (PRD)</span>
             </button>
           </>
         )}
@@ -236,7 +252,7 @@ export const AudioRecorder = ({ onRecordingComplete, selectedLanguage = 'gu' }) 
           }}
         >
           <div style={{ fontWeight: 700, color: 'var(--accent-cyan)', marginBottom: '4px' }}>
-            Sample Gujarati Audio Injected (PRD Section 12 Scenario):
+            Sample {currentLangName} Audio Injected (PRD Section 12 Scenario):
           </div>
           <div style={{ fontStyle: 'italic', color: 'var(--text-primary)' }}>
             "અમારા ગામ તારાપુરથી સામુહિક આરોગ્ય કેન્દ્ર સુધીનો રસ્તો ચોમાસામાં તૂટી ગયો છે, દર્દીઓ અને એમ્બ્યુલન્સ સમયસર હોસ્પિટલ પહોંચી શકતા નથી."
