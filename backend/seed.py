@@ -16,6 +16,22 @@ DEMO_USERS = [
         "title": "Senior Infrastructure Planning Analyst",
         "department": "Gujarat State Infrastructure Planning Board",
         "country": "India"
+    },
+    {
+        "email": "admin@brics.gov",
+        "role": "admin",
+        "name": "Elena Rostova",
+        "title": "Chief System Administrator",
+        "department": "BRICS Digital Public Infrastructure Authority",
+        "country": "Russia"
+    },
+    {
+        "email": "zeelsheth1@gmail.com",
+        "role": "admin",
+        "name": "Zeel Sheth",
+        "title": "System Administrator",
+        "department": "IT Operations",
+        "country": "India"
     }
 ]
 
