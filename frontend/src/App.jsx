@@ -149,31 +149,31 @@ function App() {
           />
         );
       case 'report':
-        return <ReportRequest onNavigateToTrack={handleNavigateToTrack} />;
+        return <ReportRequest onNavigateToTrack={handleNavigateToTrack} currentLang={currentLang} />;
       case 'track':
-        return <TrackRequest initialRequestId={trackedRequestId} onOpenProject={handleOpenProject} />;
+        return <TrackRequest initialRequestId={trackedRequestId} onOpenProject={handleOpenProject} currentLang={currentLang} />;
       case 'public-projects':
-        return <PublicProjects onNavigate={(view) => setCurrentView(view)} />;
+        return <PublicProjects onNavigate={(view) => setCurrentView(view)} currentLang={currentLang} />;
       case 'about':
-        return <About />;
+        return <About currentLang={currentLang} />;
 
       // Government Views (Protected)
       case 'gov-dashboard':
         return <Dashboard onNavigate={handleProtectedNavigate} onOpenProject={handleOpenProject} currentLang={currentLang} />;
       case 'gov-requests':
-        return <Requests onNavigate={handleProtectedNavigate} />;
+        return <Requests onNavigate={handleProtectedNavigate} currentLang={currentLang} />;
       case 'gov-hotspots':
-        return <Hotspots onNavigate={handleProtectedNavigate} />;
+        return <Hotspots onNavigate={handleProtectedNavigate} currentLang={currentLang} />;
       case 'gov-gaps':
-        return <InfrastructureGaps onNavigate={handleProtectedNavigate} />;
+        return <InfrastructureGaps onNavigate={handleProtectedNavigate} currentLang={currentLang} />;
       case 'gov-recommendations':
-        return <Recommendations onNavigate={handleProtectedNavigate} onOpenProject={handleOpenProject} />;
+        return <Recommendations onNavigate={handleProtectedNavigate} onOpenProject={handleOpenProject} currentLang={currentLang} />;
       case 'gov-projects':
-        return <Projects onNavigate={handleProtectedNavigate} />;
+        return <Projects onNavigate={handleProtectedNavigate} currentLang={currentLang} />;
       case 'gov-impact':
-        return <Impact />;
+        return <Impact currentLang={currentLang} />;
       case 'gov-settings':
-        return <Settings />;
+        return <Settings currentLang={currentLang} />;
 
       default:
         return <Home onNavigate={(view) => setCurrentView(view)} currentLang={currentLang} />;

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, CheckCircle2, Clock, Sparkles, Building, ArrowRight, Layers, Volume2 } from 'lucide-react';
 import { api } from '../services/api';
+import { translate } from '../services/i18n';
 
-export const TrackRequest = ({ initialRequestId = '', onOpenProject }) => {
+export const TrackRequest = ({ initialRequestId = '', onOpenProject, currentLang = 'en' }) => {
   const [searchId, setSearchId] = useState(initialRequestId || 'REQ-8492');
   const [currentRequest, setCurrentRequest] = useState(null);
   const [allRequests, setAllRequests] = useState([]);
@@ -43,8 +44,8 @@ export const TrackRequest = ({ initialRequestId = '', onOpenProject }) => {
       {/* Search Header */}
       <div className="glass-panel" style={{ padding: '32px', marginBottom: '28px' }}>
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Track Citizen Request</h2>
-          <p>Real-time visibility into the municipal decision-support and project execution pipeline.</p>
+          <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>{translate('Track Citizen Request', currentLang)}</h2>
+          <p>{translate('Real-time visibility into the municipal decision-support and project execution pipeline.', currentLang)}</p>
         </div>
 
         <div style={{ display: 'flex', gap: '10px', maxWidth: '560px', marginInline: 'auto' }}>
@@ -53,20 +54,20 @@ export const TrackRequest = ({ initialRequestId = '', onOpenProject }) => {
               type="text"
               value={searchId}
               onChange={(e) => setSearchId(e.target.value)}
-              placeholder="Enter Request ID (e.g. REQ-8492)..."
+              placeholder={translate('Enter Request ID (e.g. REQ-8492)...', currentLang)}
               className="input-control"
               style={{ paddingLeft: '42px', fontFamily: 'var(--font-mono)' }}
             />
             <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '14px' }} />
           </div>
           <button onClick={() => handleSearch()} className="btn btn-primary" style={{ paddingInline: '24px' }}>
-            Track Status
+            {translate('Track Status', currentLang)}
           </button>
         </div>
 
         {/* Quick Click Samples */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Quick sample IDs:</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{translate('Quick sample IDs:', currentLang)}</span>
           {allRequests.slice(0, 4).map(r => (
             <button
               key={r.id}
@@ -135,7 +136,7 @@ export const TrackRequest = ({ initialRequestId = '', onOpenProject }) => {
               `}</style>
               <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                  Original Citizen Voice ({currentRequest.languageName || currentRequest.language})
+                  {translate('Original Citizen Voice', currentLang)} ({currentRequest.languageName || currentRequest.language})
                 </div>
                 <p style={{ fontStyle: 'italic', fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.6 }}>
                   "{currentRequest.originalText}"
@@ -144,7 +145,7 @@ export const TrackRequest = ({ initialRequestId = '', onOpenProject }) => {
 
               <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                  AI Normalized & Translated English
+                  {translate('AI Normalized & Translated English', currentLang)}
                 </div>
                 <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                   "{currentRequest.translatedText}"

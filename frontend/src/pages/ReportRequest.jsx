@@ -15,8 +15,9 @@ import { CATEGORIES, INDIAN_LANGUAGES, DISTRICTS_DATA } from '../services/mockDa
 import { AudioRecorder } from '../components/AudioRecorder';
 import { api } from '../services/api';
 import { detectLanguage, classifyRequest, extractUrgency } from '../services/aiService';
+import { translate } from '../services/i18n';
 
-export const ReportRequest = ({ onNavigateToTrack }) => {
+export const ReportRequest = ({ onNavigateToTrack, currentLang = 'en' }) => {
   const [inputMode, setInputMode] = useState('voice'); // 'voice' or 'text'
   const [selectedLang, setSelectedLang] = useState('gu');
   const [textInput, setTextInput] = useState('');
@@ -85,18 +86,18 @@ export const ReportRequest = ({ onNavigateToTrack }) => {
         <div className="glass-panel" style={{ padding: '36px' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <span className="badge badge-cyan" style={{ marginBottom: '8px' }}>
-              Direct Citizen Access
+              {translate('Direct Citizen Access', currentLang)}
             </span>
-            <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Report an Infrastructure Need</h2>
+            <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>{translate('Report an Infrastructure Need', currentLang)}</h2>
             <p style={{ maxWidth: '540px', marginInline: 'auto' }}>
-              Your voice counts. Submissions are processed by AI into demand hotspots and delivered straight to regional infrastructure planning teams.
+              {translate('Your voice counts. Submissions are processed by AI into demand hotspots and delivered straight to regional infrastructure planning teams.', currentLang)}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             {/* Input Mode Selector (Voice vs Text) */}
             <div>
-              <label className="input-label">Select Input Method</label>
+              <label className="input-label">{translate('Select Input Method', currentLang)}</label>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                 <button
                   type="button"
@@ -105,7 +106,7 @@ export const ReportRequest = ({ onNavigateToTrack }) => {
                   style={{ gap: '8px', padding: '14px' }}
                 >
                   <Mic size={18} />
-                  <span>Voice Recording (Preferred)</span>
+                  <span>{translate('Voice Recording (Preferred)', currentLang)}</span>
                 </button>
                 <button
                   type="button"
@@ -114,14 +115,14 @@ export const ReportRequest = ({ onNavigateToTrack }) => {
                   style={{ gap: '8px', padding: '14px' }}
                 >
                   <FileText size={18} />
-                  <span>Written Text Description</span>
+                  <span>{translate('Written Text Description', currentLang)}</span>
                 </button>
               </div>
             </div>
 
             {/* Language Selection */}
             <div>
-              <label className="input-label">Preferred Citizen Language</label>
+              <label className="input-label">{translate('Preferred Citizen Language', currentLang)}</label>
               <select
                 value={selectedLang}
                 onChange={(e) => setSelectedLang(e.target.value)}
@@ -138,7 +139,7 @@ export const ReportRequest = ({ onNavigateToTrack }) => {
             {/* Voice Recording Box */}
             {inputMode === 'voice' ? (
               <div>
-                <label className="input-label">Audio Voice Input</label>
+                <label className="input-label">{translate('Audio Voice Input', currentLang)}</label>
                 <AudioRecorder
                   selectedLanguage={selectedLang}
                   onRecordingComplete={handleAudioComplete}
@@ -146,7 +147,7 @@ export const ReportRequest = ({ onNavigateToTrack }) => {
               </div>
             ) : (
               <div>
-                <label className="input-label">Describe the Infrastructure Issue</label>
+                <label className="input-label">{translate('Describe the Infrastructure Issue', currentLang)}</label>
                 <textarea
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
@@ -161,7 +162,7 @@ export const ReportRequest = ({ onNavigateToTrack }) => {
             <div>
               <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <MapPin size={16} color="#06b6d4" />
-                <span>Geographic Location</span>
+                <span>{translate('Geographic Location', currentLang)}</span>
               </label>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '12px' }} className="loc-grid">
@@ -171,7 +172,7 @@ export const ReportRequest = ({ onNavigateToTrack }) => {
                   }
                 `}</style>
                 <div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>District</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{translate('District', currentLang)}</span>
                   <select
                     value={selectedDistrict}
                     onChange={(e) => setSelectedDistrict(e.target.value)}
@@ -184,7 +185,7 @@ export const ReportRequest = ({ onNavigateToTrack }) => {
                 </div>
 
                 <div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Taluka / Sub-district / Village</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{translate('Taluka / Sub-district / Village', currentLang)}</span>
                   <input
                     type="text"
                     value={subdistrict}
@@ -196,7 +197,7 @@ export const ReportRequest = ({ onNavigateToTrack }) => {
               </div>
 
               <div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Landmark or Specific Facility</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{translate('Landmark or Specific Facility', currentLang)}</span>
                 <input
                   type="text"
                   value={landmark}
@@ -209,13 +210,13 @@ export const ReportRequest = ({ onNavigateToTrack }) => {
 
             {/* Sector Category */}
             <div>
-              <label className="input-label">Sector Category (Optional)</label>
+              <label className="input-label">{translate('Sector Category (Optional)', currentLang)}</label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="select-control"
               >
-                <option value="auto">✨ Auto-Detect with AI Understanding (Recommended)</option>
+                <option value="auto">{translate('✨ Auto-Detect with AI Understanding (Recommended)', currentLang)}</option>
                 {CATEGORIES.map(c => (
                   <option key={c.id} value={c.id}>{c.label}</option>
                 ))}
@@ -227,7 +228,7 @@ export const ReportRequest = ({ onNavigateToTrack }) => {
               <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-cyan)', fontWeight: 700, fontSize: '0.85rem', marginBottom: '8px' }}>
                   <Sparkles size={16} />
-                  <span>Real-Time AI Understanding Preview</span>
+                  <span>{translate('Real-Time AI Understanding Preview', currentLang)}</span>
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   <span className="badge badge-purple">Detected: {detectedLang.name}</span>
@@ -246,10 +247,10 @@ export const ReportRequest = ({ onNavigateToTrack }) => {
               style={{ width: '100%', marginTop: '8px' }}
             >
               {isSubmitting ? (
-                <span>Ingesting & Processing with AI...</span>
+                <span>{translate('Ingesting & Processing with AI...', currentLang)}</span>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>Submit Development Request</span>
+                  <span>{translate('Submit Development Request', currentLang)}</span>
                   <ArrowRight size={18} />
                 </div>
               )}
