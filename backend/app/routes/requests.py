@@ -3,6 +3,7 @@ from typing import List, Optional, Dict, Any
 from app.schemas.request import CitizenRequestCreate
 from app.config.database import get_db
 from app.services.ai_service import analyze_citizen_request
+from app.routes.ws import manager
 import datetime
 
 router = APIRouter(prefix="/api/requests", tags=["requests"])
@@ -58,4 +59,13 @@ async def create_request(req: CitizenRequestCreate):
     
     await db.requests.insert_one(record)
     record["_id"] = str(record["_id"])
+    
+    # Broadcast real-time notification
+    if record["urgency"] in ["High", "Critical"]:
+        await manager.broadcast({
+            "type": "NEW_CRITICAL_REQUEST",
+            "message": f"New {record['urgency']} {record['category']} request in {record['location'].get('district', 'unknown')}",
+            "data": record
+        })
+        
     return record

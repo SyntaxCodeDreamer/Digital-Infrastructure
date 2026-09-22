@@ -18,7 +18,7 @@ except ImportError:
     seed_all_collections = None
 
 # Import Routers
-from app.routes import auth, requests, dashboard, projects, ai
+from app.routes import auth, requests, dashboard, projects, ai, ws, audit
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -51,6 +51,8 @@ app.include_router(requests.router)
 app.include_router(dashboard.router)
 app.include_router(projects.router)
 app.include_router(ai.router)
+app.include_router(ws.router)
+app.include_router(audit.router)
 
 @app.get("/")
 def root():
