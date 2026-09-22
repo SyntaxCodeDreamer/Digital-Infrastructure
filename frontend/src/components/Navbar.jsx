@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { INDIAN_LANGUAGES } from '../services/mockData';
 import { storageService } from '../services/storageService';
+import { translate } from '../services/i18n';
 
 export const Navbar = ({ 
   currentRole, 
@@ -42,22 +43,22 @@ export const Navbar = ({
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
 
   const publicNavItems = [
-    { id: 'home', label: 'Home' },
-    { id: 'report', label: 'Report a Need' },
-    { id: 'track', label: 'Track Request' },
-    { id: 'public-projects', label: 'Projects' },
-    { id: 'about', label: 'About' },
+    { id: 'home', label: translate('Home', currentLang) },
+    { id: 'report', label: translate('Report a Need', currentLang) },
+    { id: 'track', label: translate('Track Request', currentLang) },
+    { id: 'public-projects', label: translate('Projects', currentLang) },
+    { id: 'about', label: translate('About', currentLang) },
   ];
 
   const govNavItems = [
-    { id: 'gov-dashboard', label: 'Dashboard', icon: BarChart3 },
-    { id: 'gov-requests', label: 'Citizen Requests', icon: FileText },
-    { id: 'gov-hotspots', label: 'Demand Hotspots', icon: Flame },
-    { id: 'gov-gaps', label: 'Infrastructure Gaps', icon: Compass },
-    { id: 'gov-recommendations', label: 'Project Insights', icon: Lightbulb },
-    { id: 'gov-projects', label: 'Projects Tracker', icon: CheckCircle2 },
-    { id: 'gov-impact', label: 'Impact Analytics', icon: TrendingUp },
-    { id: 'gov-settings', label: 'Model & Settings', icon: Settings },
+    { id: 'gov-dashboard', label: translate('Dashboard', currentLang), icon: BarChart3 },
+    { id: 'gov-requests', label: translate('Citizen Requests', currentLang), icon: FileText },
+    { id: 'gov-hotspots', label: translate('Demand Hotspots', currentLang), icon: Flame },
+    { id: 'gov-gaps', label: translate('Infrastructure Gaps', currentLang), icon: Compass },
+    { id: 'gov-recommendations', label: translate('Project Insights', currentLang), icon: Lightbulb },
+    { id: 'gov-projects', label: translate('Projects Tracker', currentLang), icon: CheckCircle2 },
+    { id: 'gov-impact', label: translate('Impact Analytics', currentLang), icon: TrendingUp },
+    { id: 'gov-settings', label: translate('Model & Settings', currentLang), icon: Settings },
   ];
 
   const navItems = currentRole === 'citizen' ? publicNavItems : govNavItems;
@@ -95,8 +96,8 @@ export const Navbar = ({
             <Building2 size={24} />
           </div>
           <div>
-            <div className="brand-title">BRICS Citizen Intel</div>
-            <div className="brand-subtitle">Digital Public Good</div>
+            <div className="brand-title">{translate('BRICS Citizen Intel', currentLang)}</div>
+            <div className="brand-subtitle">{translate('Digital Public Good', currentLang)}</div>
           </div>
         </div>
 
@@ -153,7 +154,7 @@ export const Navbar = ({
               ) : (
                 <Settings size={14} color="#a855f7" />
               )}
-              <span>{currentRole === 'citizen' ? 'Citizen' : currentRole === 'analyst' ? 'Gov Analyst' : 'Admin'}</span>
+              <span>{currentRole === 'citizen' ? translate('Citizen', currentLang) : currentRole === 'analyst' ? translate('Gov Analyst', currentLang) : translate('Admin', currentLang)}</span>
             </button>
 
             {roleDropdownOpen && (
@@ -170,7 +171,7 @@ export const Navbar = ({
                 }}
               >
                 <div style={{ padding: '6px 10px', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
-                  PORTAL ACCESS ROLE
+                  {translate('PORTAL ACCESS ROLE', currentLang)}
                 </div>
 
                 <button
@@ -179,7 +180,7 @@ export const Navbar = ({
                   style={{ width: '100%', justifyContent: 'flex-start', marginBottom: '4px' }}
                 >
                   <UserCheck size={14} color="#3b82f6" />
-                  <span>Citizen (Public Portal)</span>
+                  <span>{translate('Citizen (Public Portal)', currentLang)}</span>
                 </button>
 
                 <button
@@ -188,7 +189,7 @@ export const Navbar = ({
                   style={{ width: '100%', justifyContent: 'flex-start', marginBottom: '4px' }}
                 >
                   <ShieldCheck size={14} color="#06b6d4" />
-                  <span>Government Analyst {currentUser?.role === 'analyst' ? '(Signed In)' : '🔒 Sign In'}</span>
+                  <span>{translate('Gov Analyst', currentLang)} {currentUser?.role === 'analyst' ? '(Signed In)' : '🔒 Sign In'}</span>
                 </button>
 
                 <button
@@ -197,7 +198,7 @@ export const Navbar = ({
                   style={{ width: '100%', justifyContent: 'flex-start' }}
                 >
                   <Settings size={14} color="#a855f7" />
-                  <span>Administrator {currentUser?.role === 'admin' ? '(Signed In)' : '🔒 Sign In'}</span>
+                  <span>{translate('Administrator', currentLang)} {currentUser?.role === 'admin' ? '(Signed In)' : '🔒 Sign In'}</span>
                 </button>
               </div>
             )}
@@ -231,7 +232,7 @@ export const Navbar = ({
                 title="Sign Out"
               >
                 <LogOut size={14} />
-                <span style={{ fontSize: '0.78rem' }}>Sign Out</span>
+                <span style={{ fontSize: '0.78rem' }}>{translate('Sign Out', currentLang)}</span>
               </button>
             </div>
           ) : (
@@ -241,7 +242,7 @@ export const Navbar = ({
               style={{ gap: '6px', padding: '6px 12px', fontSize: '0.825rem' }}
             >
               <LogIn size={14} />
-              <span>Gov Sign In</span>
+              <span>{translate('Gov Sign In', currentLang)}</span>
             </button>
           )}
 
@@ -270,7 +271,7 @@ export const Navbar = ({
                 }}
               >
                 <div style={{ padding: '6px 10px', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
-                  SELECT LANGUAGE
+                  {translate('SELECT LANGUAGE', currentLang)}
                 </div>
                 {INDIAN_LANGUAGES.map(lang => (
                   <button

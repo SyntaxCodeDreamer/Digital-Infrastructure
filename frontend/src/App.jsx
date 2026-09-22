@@ -145,6 +145,7 @@ function App() {
                 setCurrentView(view);
               }
             }}
+            currentLang={currentLang}
           />
         );
       case 'report':
@@ -175,7 +176,7 @@ function App() {
         return <Settings />;
 
       default:
-        return <Home onNavigate={(view) => setCurrentView(view)} />;
+        return <Home onNavigate={(view) => setCurrentView(view)} currentLang={currentLang} />;
     }
   };
 

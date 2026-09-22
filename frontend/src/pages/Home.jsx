@@ -15,8 +15,9 @@ import {
   FileCheck
 } from 'lucide-react';
 import { INDIAN_LANGUAGES } from '../services/mockData';
+import { translate } from '../services/i18n';
 
-export const Home = ({ onNavigate, onTestScenario }) => {
+export const Home = ({ onNavigate, onTestScenario, currentLang = 'en' }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '64px' }}>
       {/* Hero Section (DESIGN.md Section 3) */}
@@ -24,19 +25,19 @@ export const Home = ({ onNavigate, onTestScenario }) => {
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: 'var(--radius-full)', background: 'rgba(59, 130, 246, 0.12)', border: '1px solid var(--border-bright)', marginBottom: '24px' }}>
           <Sparkles size={16} color="#06b6d4" />
           <span style={{ fontSize: '0.825rem', fontWeight: 600, color: 'var(--accent-cyan)' }}>
-            BRICS Digital Public Good — AI-Powered Civic Intelligence
+            {translate('BRICS Digital Public Good — AI-Powered Civic Intelligence', currentLang)}
           </span>
         </div>
 
         <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 4.2rem)', fontWeight: 800, lineHeight: 1.1, marginBottom: '20px', maxWidth: '900px', marginInline: 'auto' }}>
-          Your Voice. <br />
+          {translate('Your Voice.', currentLang)} <br />
           <span style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            Better Infrastructure.
+            {translate('Better Infrastructure.', currentLang)}
           </span>
         </h1>
 
         <p style={{ fontSize: '1.15rem', color: 'var(--text-secondary)', maxWidth: '680px', marginInline: 'auto', marginBottom: '36px', lineHeight: 1.6 }}>
-          Submit local infrastructure needs in your native language through voice or text. Our explainable AI unifies citizen demand with public datasets to help policymakers prioritize life-changing projects.
+          {translate('Submit local infrastructure needs in your native language through voice or text. Our explainable AI unifies citizen demand with public datasets to help policymakers prioritize life-changing projects.', currentLang)}
         </p>
 
         {/* Dual Actions */}
@@ -47,7 +48,7 @@ export const Home = ({ onNavigate, onTestScenario }) => {
             style={{ gap: '10px' }}
           >
             <Mic size={20} />
-            <span>Report a Need (Voice / Text)</span>
+            <span>{translate('Report a Need (Voice / Text)', currentLang)}</span>
             <ArrowRight size={18} />
           </button>
 
@@ -57,7 +58,7 @@ export const Home = ({ onNavigate, onTestScenario }) => {
             style={{ gap: '10px' }}
           >
             <BarChart3 size={20} color="var(--accent-cyan)" />
-            <span>Explore Development Data</span>
+            <span>{translate('Explore Development Data', currentLang)}</span>
           </button>
         </div>
       </section>
@@ -76,7 +77,7 @@ export const Home = ({ onNavigate, onTestScenario }) => {
                 2,490+
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
-                Citizen Requests Ingested
+                {translate('Citizen Requests Ingested', currentLang)}
               </div>
             </div>
             <div>
@@ -84,7 +85,7 @@ export const Home = ({ onNavigate, onTestScenario }) => {
                 7
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
-                Indian Languages Supported
+                {translate('INDIAN LANGUAGES SUPPORTED', currentLang)}
               </div>
             </div>
             <div>
@@ -92,7 +93,7 @@ export const Home = ({ onNavigate, onTestScenario }) => {
                 5
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
-                Active Demand Hotspots
+                {translate('Active Demand Hotspots', currentLang)}
               </div>
             </div>
             <div>
@@ -100,7 +101,7 @@ export const Home = ({ onNavigate, onTestScenario }) => {
                 242,000+
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
-                Population Impacted
+                {translate('Population Impacted', currentLang)}
               </div>
             </div>
           </div>
