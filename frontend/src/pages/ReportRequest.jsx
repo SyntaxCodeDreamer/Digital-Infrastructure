@@ -42,6 +42,33 @@ export const ReportRequest = ({ onNavigateToTrack, currentLang = 'en', setCurren
     }
   };
 
+  const handleTextChange = async (e) => {
+    const val = e.target.value;
+    setTextInput(val);
+    
+    // Transliteration logic triggered by space
+    if (val.endsWith(' ') && selectedLang !== 'en') {
+      const words = val.split(' ');
+      const lastWordIndex = words.length - 2;
+      const lastWord = words[lastWordIndex];
+      
+      // Only transliterate if word contains basic english alphabets
+      if (lastWord && lastWord.trim().length > 0 && /^[a-zA-Z]+$/.test(lastWord)) {
+        try {
+          const response = await fetch(`https://inputtools.google.com/request?text=${lastWord}&itc=${selectedLang}-t-i0-und&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8&app=test`);
+          const data = await response.json();
+          if (data[0] === 'SUCCESS' && data[1] && data[1][0] && data[1][0][1] && data[1][0][1][0]) {
+            const transliteratedWord = data[1][0][1][0];
+            words[lastWordIndex] = transliteratedWord;
+            setTextInput(words.join(' '));
+          }
+        } catch (err) {
+          console.error("Transliteration error:", err);
+        }
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const content = inputMode === 'voice' ? (audioData?.transcript || textInput || 'Urgent infrastructure repair needed in village approach road.') : textInput;
@@ -161,7 +188,7 @@ export const ReportRequest = ({ onNavigateToTrack, currentLang = 'en', setCurren
                 <label className="input-label">{translate('Describe the Infrastructure Issue', currentLang)}</label>
                 <textarea
                   value={textInput}
-                  onChange={(e) => setTextInput(e.target.value)}
+                  onChange={handleTextChange}
                   placeholder="Describe the issue in your own language (e.g. Broken road, lack of clinic water, power outages)..."
                   rows={4}
                   className="textarea-control"
