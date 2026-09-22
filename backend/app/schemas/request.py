@@ -1,34 +1,24 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from pydantic import BaseModel
+from typing import Optional
 
-class LocationSchema(BaseModel):
-    country: str
-    state: str
-    district: str
-    subdistrict: Optional[str] = None
-    landmark: Optional[str] = None
+class LocationModel(BaseModel):
+    country: str = "India"
+    state: str = "Gujarat"
+    district: str = "Anand"
+    subdistrict: Optional[str] = "Tarapur"
+    landmark: Optional[str] = "Near Community Health Centre"
 
-class CitizenRequestSchema(BaseModel):
-    id: str = Field(..., alias="_id")
+class CitizenRequestCreate(BaseModel):
+    originalText: str
+    language: str = "gu"
+    inputType: str = "voice"
+    category: Optional[str] = "healthcare"
+    location: Optional[LocationModel] = None
+
+class CitizenRequestResponse(BaseModel):
+    id: str
     title: str
-    inputType: str
-    language: str
-    languageName: str
     originalText: str
     translatedText: str
-    location: LocationSchema
-    category: str
-    subcategory: str
-    urgency: str
-    confidenceScore: float
-    entities: List[str]
-    affectedPopulation: Optional[int] = 0
-    status: str
-    similarRequests: List[str]
-    createdAt: str
-    audioDuration: Optional[str] = None
-    verified: bool
-    audioWaveform: Optional[List[int]] = None
-    
-    class Config:
-        populate_by_name = True
+    language: str
+    inputType: str
