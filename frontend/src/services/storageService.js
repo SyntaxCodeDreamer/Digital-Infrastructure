@@ -13,15 +13,26 @@ import {
 import { calculatePriorityScore } from './aiService';
 
 const STORAGE_KEYS = {
-  REQUESTS: 'brics_citizen_requests_v1',
-  HOTSPOTS: 'brics_demand_hotspots_v1',
-  INSIGHTS: 'brics_priority_insights_v1',
-  PROJECTS: 'brics_tracked_projects_v1',
-  IMPACT: 'brics_impact_metrics_v1',
-  WEIGHTS: 'brics_priority_weights_v1',
-  AUDIT: 'brics_audit_logs_v1',
-  DISTRICTS: 'brics_districts_data_v1',
+  REQUESTS: 'brics_citizen_requests_v2',
+  HOTSPOTS: 'brics_demand_hotspots_v2',
+  INSIGHTS: 'brics_priority_insights_v2',
+  PROJECTS: 'brics_tracked_projects_v2',
+  IMPACT: 'brics_impact_metrics_v2',
+  WEIGHTS: 'brics_priority_weights_v2',
+  AUDIT: 'brics_audit_logs_v2',
+  DISTRICTS: 'brics_districts_data_v2',
 };
+
+const OLD_STORAGE_KEYS = [
+  'brics_citizen_requests_v1',
+  'brics_demand_hotspots_v1',
+  'brics_priority_insights_v1',
+  'brics_tracked_projects_v1',
+  'brics_impact_metrics_v1',
+  'brics_priority_weights_v1',
+  'brics_audit_logs_v1',
+  'brics_districts_data_v1',
+];
 
 const listeners = new Set();
 
@@ -36,6 +47,9 @@ export const storageService = {
   },
 
   initStorage: () => {
+    OLD_STORAGE_KEYS.forEach(key => {
+      try { localStorage.removeItem(key); } catch (e) {}
+    });
     if (!localStorage.getItem(STORAGE_KEYS.REQUESTS)) {
       localStorage.setItem(STORAGE_KEYS.REQUESTS, JSON.stringify(INITIAL_CITIZEN_REQUESTS));
     }
@@ -261,6 +275,17 @@ export const storageService = {
     localStorage.setItem(STORAGE_KEYS.IMPACT, JSON.stringify(IMPACT_METRICS));
     localStorage.setItem(STORAGE_KEYS.WEIGHTS, JSON.stringify(DEFAULT_PRIORITY_WEIGHTS));
     localStorage.setItem(STORAGE_KEYS.AUDIT, JSON.stringify(AUDIT_LOGS));
+    localStorage.setItem(STORAGE_KEYS.DISTRICTS, JSON.stringify(DISTRICTS_DATA));
+    notifyListeners('STORAGE_RESET', null);
+  },
+
+  clearAll: () => {
+    localStorage.setItem(STORAGE_KEYS.REQUESTS, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.HOTSPOTS, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.INSIGHTS, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.IMPACT, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.AUDIT, JSON.stringify([]));
     localStorage.setItem(STORAGE_KEYS.DISTRICTS, JSON.stringify(DISTRICTS_DATA));
     notifyListeners('STORAGE_RESET', null);
   }

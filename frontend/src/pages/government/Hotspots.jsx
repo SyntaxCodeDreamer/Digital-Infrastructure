@@ -28,7 +28,16 @@ export const Hotspots = ({ onNavigate }) => {
         <h3 style={{ fontSize: '1.3rem', marginBottom: '16px' }}>Ranked Criticality Hotspots</h3>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-          {hotspots.map((h, idx) => (
+          {hotspots.length === 0 ? (
+            <div className="glass-panel" style={{ padding: '40px 20px', textAlign: 'center', gridColumn: '1 / -1' }}>
+              <Flame size={40} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
+              <h4 style={{ fontSize: '1.15rem', marginBottom: '6px' }}>No Active Demand Hotspots</h4>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                Hotspot clusters are triggered when multiple citizen requests converge geographically.
+              </p>
+            </div>
+          ) : (
+            hotspots.map((h, idx) => (
             <div
               key={h.id}
               className="glass-panel"
@@ -79,7 +88,8 @@ export const Hotspots = ({ onNavigate }) => {
                 <ArrowRight size={14} />
               </button>
             </div>
-          ))}
+          ))
+        )}
         </div>
       </div>
     </div>

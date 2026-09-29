@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ArrowRight, 
   Mic, 
@@ -16,8 +16,29 @@ import {
 } from 'lucide-react';
 import { INDIAN_LANGUAGES } from '../services/mockData';
 import { translate } from '../services/i18n';
+import { api } from '../services/api';
+import { storageService } from '../services/storageService';
 
 export const Home = ({ onNavigate, onTestScenario, currentLang = 'en' }) => {
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    loadStats();
+    const unsubscribe = storageService.subscribe(() => {
+      loadStats();
+    });
+    return unsubscribe;
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      const summary = await api.getDashboardSummary();
+      setStats(summary);
+    } catch {
+      setStats(null);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '64px' }}>
       {/* Hero Section (DESIGN.md Section 3) */}
@@ -74,7 +95,7 @@ export const Home = ({ onNavigate, onTestScenario, currentLang = 'en' }) => {
             `}</style>
             <div>
               <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-cyan)', fontFamily: 'var(--font-display)' }}>
-                2,490+
+                {stats?.totalRequests ?? 0}
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
                 {translate('Citizen Requests Ingested', currentLang)}
@@ -82,7 +103,7 @@ export const Home = ({ onNavigate, onTestScenario, currentLang = 'en' }) => {
             </div>
             <div>
               <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-blue)', fontFamily: 'var(--font-display)' }}>
-                7
+                {INDIAN_LANGUAGES.length}
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
                 {translate('INDIAN LANGUAGES SUPPORTED', currentLang)}
@@ -90,7 +111,7 @@ export const Home = ({ onNavigate, onTestScenario, currentLang = 'en' }) => {
             </div>
             <div>
               <div style={{ fontSize: '2rem', fontWeight: 800, color: '#f97316', fontFamily: 'var(--font-display)' }}>
-                5
+                {stats?.activeHotspots ?? 0}
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
                 {translate('Active Demand Hotspots', currentLang)}
@@ -98,7 +119,7 @@ export const Home = ({ onNavigate, onTestScenario, currentLang = 'en' }) => {
             </div>
             <div>
               <div style={{ fontSize: '2rem', fontWeight: 800, color: '#10b981', fontFamily: 'var(--font-display)' }}>
-                242,000+
+                {stats?.populationImpacted ? `${(stats.populationImpacted / 1000).toFixed(0)}k+` : '0'}
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
                 {translate('Population Impacted', currentLang)}

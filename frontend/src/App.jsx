@@ -62,8 +62,6 @@ function App() {
     if (pendingViewAfterLogin) {
       setCurrentView(pendingViewAfterLogin);
       setPendingViewAfterLogin(null);
-    } else if (user.role === 'admin') {
-      setCurrentView('gov-settings');
     } else {
       setCurrentView('gov-dashboard');
     }
@@ -125,7 +123,7 @@ function App() {
               <ShieldCheck size={18} />
               <span>Sign In as Government Analyst</span>
             </button>
-            <button onClick={() => handleOpenLogin('admin', 'gov-settings')} className="btn btn-secondary btn-lg" style={{ gap: '8px' }}>
+            <button onClick={() => handleOpenLogin('admin', 'gov-dashboard')} className="btn btn-secondary btn-lg" style={{ gap: '8px' }}>
               <span>Administrator Sign In</span>
             </button>
           </div>

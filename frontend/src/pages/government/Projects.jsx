@@ -47,7 +47,20 @@ export const Projects = ({ onNavigate }) => {
 
       {/* Projects Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
-        {projects.map((p) => {
+        {projects.length === 0 ? (
+          <div className="glass-panel" style={{ padding: '60px 20px', textAlign: 'center', gridColumn: '1 / -1' }}>
+            <Building size={48} color="var(--text-muted)" style={{ margin: '0 auto 16px' }} />
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>No Active Infrastructure Projects</h3>
+            <p style={{ color: 'var(--text-secondary)', maxWidth: '440px', margin: '0 auto 20px' }}>
+              No projects have been initiated yet. Review AI Project Insights to approve projects from verified citizen demand.
+            </p>
+            <button onClick={() => onNavigate('gov-recommendations')} className="btn btn-primary btn-sm">
+              <Plus size={16} />
+              <span>Review AI Insights</span>
+            </button>
+          </div>
+        ) : (
+          projects.map((p) => {
           const isCompleted = p.status === 'Completed';
           const isInProgress = p.status === 'In Progress';
           const isApproved = p.status === 'Approved';
@@ -138,7 +151,8 @@ export const Projects = ({ onNavigate }) => {
               </div>
             </div>
           );
-        })}
+        })
+      )}
       </div>
     </div>
   );

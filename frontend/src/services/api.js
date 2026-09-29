@@ -170,13 +170,15 @@ export const api = {
 
     const totalPop = hotspots.reduce((acc, h) => acc + (h.affectedPopulation || 0), 0);
     const criticalHotspots = hotspots.filter(h => h.severity === 'critical').length;
-    const avgConfidence = (requests.reduce((acc, r) => acc + (r.confidenceScore || 0.9), 0) / (requests.length || 1)).toFixed(2);
+    const avgConfidence = requests.length 
+      ? (requests.reduce((acc, r) => acc + (r.confidenceScore || 0.9), 0) / requests.length).toFixed(2) 
+      : "0.00";
 
     return {
       totalRequests: requests.length,
       activeHotspots: hotspots.length,
       criticalHotspots: criticalHotspots,
-      infrastructureGapsIdentified: insights.length * 3 + 2,
+      infrastructureGapsIdentified: insights.length,
       projectsTracked: projects.length,
       populationImpacted: totalPop,
       averageConfidence: avgConfidence

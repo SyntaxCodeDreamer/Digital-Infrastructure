@@ -1,4 +1,8 @@
-import google.generativeai as genai
+try:
+    import google.generativeai as genai
+except (ImportError, Exception) as e:
+    genai = None
+
 from app.config.settings import settings
 import json
 import logging
@@ -6,12 +10,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Configure the Gemini API client
-if settings.gemini_api_key:
-    genai.configure(api_key=settings.gemini_api_key)
-    # Using the new model name
-    model = genai.GenerativeModel('gemini-1.5-pro')
+if genai and settings.gemini_api_key:
+    try:
+        genai.configure(api_key=settings.gemini_api_key)
+        model = genai.GenerativeModel('gemini-1.5-pro')
+    except Exception as e:
+        logger.warning(f"Failed to configure Gemini model: {e}")
+        model = None
 else:
-    logger.warning("GEMINI_API_KEY is not set. AI classification will use mock data.")
+    logger.warning("Gemini API key is not set or client unavailable.")
     model = None
 
 async def analyze_citizen_request(text: str, language: str) -> dict:

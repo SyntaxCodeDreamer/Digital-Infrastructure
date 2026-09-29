@@ -37,20 +37,38 @@ export const StatCard = ({ title, value, subtitle, trend, icon: Icon, color = '#
         <div style={{ fontSize: '2.1rem', fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1 }}>
           {value}
         </div>
-        {trend && (
-          <span
-            style={{
-              fontSize: '0.78rem',
-              fontWeight: 700,
-              padding: '2px 8px',
-              borderRadius: '999px',
-              background: trend.startsWith('+') ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-              color: trend.startsWith('+') ? '#34d399' : '#f87171'
-            }}
-          >
-            {trend}
-          </span>
-        )}
+        {trend && (() => {
+          const tLower = trend.toLowerCase();
+          const isCritical = tLower.includes('critical') || tLower.includes('deficit');
+          const isPositive = trend.startsWith('+') && !trend.startsWith('+0');
+          const isNeutral = trend.startsWith('0') || trend.startsWith('$0') || trend.startsWith('+0');
+
+          const bg = isCritical 
+            ? 'rgba(239, 68, 68, 0.15)' 
+            : isPositive 
+            ? 'rgba(16, 185, 129, 0.15)' 
+            : 'rgba(148, 163, 184, 0.15)';
+          const textColor = isCritical 
+            ? '#f87171' 
+            : isPositive 
+            ? '#34d399' 
+            : '#94a3b8';
+
+          return (
+            <span
+              style={{
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                padding: '2px 8px',
+                borderRadius: '999px',
+                background: bg,
+                color: textColor
+              }}
+            >
+              {trend}
+            </span>
+          );
+        })()}
       </div>
 
       {subtitle && (

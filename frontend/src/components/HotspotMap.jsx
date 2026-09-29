@@ -116,18 +116,33 @@ export const HotspotMap = ({ hotspots = [], districts = [], onSelectHotspot }) =
             />
             <text x="370" y="185" fill="var(--text-muted)" fontSize="13" fontWeight="600">Ahmedabad</text>
 
-            {/* Anand (Primary Demo District) */}
-            <path
-              d="M 390 240 L 470 230 L 480 300 L 400 310 Z"
-              className={`district-polygon ${selectedDistrict?.id === 'anand' ? 'selected' : ''}`}
-              onClick={() => setSelectedDistrict(districts.find(d => d.id === 'anand'))}
-              style={{
-                fill: selectedDistrict?.id === 'anand' ? 'rgba(6, 182, 212, 0.35)' : 'rgba(239, 68, 68, 0.15)',
-                stroke: '#ef4444',
-                strokeWidth: 2
-              }}
-            />
-            <text x="415" y="275" fill="#f87171" fontSize="13" fontWeight="700">Anand (Hotspot)</text>
+            {/* Anand District */}
+            {(() => {
+              const hasAnandHotspot = filteredHotspots.some(h => (h.district || '').toLowerCase().includes('anand') || (h.name || '').toLowerCase().includes('anand'));
+              return (
+                <>
+                  <path
+                    d="M 390 240 L 470 230 L 480 300 L 400 310 Z"
+                    className={`district-polygon ${selectedDistrict?.id === 'anand' ? 'selected' : ''}`}
+                    onClick={() => setSelectedDistrict(districts.find(d => d.id === 'anand'))}
+                    style={hasAnandHotspot ? {
+                      fill: selectedDistrict?.id === 'anand' ? 'rgba(6, 182, 212, 0.35)' : 'rgba(239, 68, 68, 0.15)',
+                      stroke: '#ef4444',
+                      strokeWidth: 2
+                    } : undefined}
+                  />
+                  <text 
+                    x={hasAnandHotspot ? "415" : "425"} 
+                    y="275" 
+                    fill={hasAnandHotspot ? "#f87171" : "var(--text-muted)"} 
+                    fontSize="13" 
+                    fontWeight={hasAnandHotspot ? "700" : "600"}
+                  >
+                    {hasAnandHotspot ? "Anand (Hotspot)" : "Anand"}
+                  </text>
+                </>
+              );
+            })()}
 
             {/* Vadodara */}
             <path

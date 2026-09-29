@@ -2,6 +2,18 @@ import React from 'react';
 import { TrendingUp, Users, CheckCircle, ArrowRight, ShieldCheck, HeartPulse, Droplets } from 'lucide-react';
 
 export const ImpactCharts = ({ impactMetrics = [] }) => {
+  if (impactMetrics.length === 0) {
+    return (
+      <div className="glass-panel" style={{ padding: '60px 20px', textAlign: 'center' }}>
+        <TrendingUp size={48} color="var(--text-muted)" style={{ margin: '0 auto 16px' }} />
+        <h3 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>No Impact Assessments Yet</h3>
+        <p style={{ color: 'var(--text-secondary)', maxWidth: '420px', margin: '0 auto' }}>
+          Post-implementation impact measurements will display here once funded infrastructure projects reach completion.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {impactMetrics.map((imp) => (

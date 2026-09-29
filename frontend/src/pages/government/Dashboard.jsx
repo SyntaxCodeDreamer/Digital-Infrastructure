@@ -76,44 +76,44 @@ export const Dashboard = ({ onNavigate, onOpenProject, currentLang = 'en' }) => 
       <div className="grid-cols-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
         <StatCard
           title={translate('Total Citizen Requests', currentLang)}
-          value={summary?.totalRequests || 184}
-          trend="+14% this month"
-          subtitle="96% classified with high confidence"
+          value={summary?.totalRequests ?? 0}
+          trend={summary?.totalRequests ? "+14% this month" : "0 new this month"}
+          subtitle={summary?.totalRequests ? "96% classified with high confidence" : "Awaiting citizen reports"}
           icon={FileText}
           color="#3b82f6"
           onClick={() => onNavigate('gov-requests')}
         />
         <StatCard
           title={translate('Active Demand Hotspots', currentLang)}
-          value={summary?.activeHotspots || 5}
-          trend="1 Critical Alert"
-          subtitle="Anand South Rural Corridor highest"
+          value={summary?.activeHotspots ?? 0}
+          trend={summary?.criticalHotspots ? `${summary.criticalHotspots} Critical Alert` : "0 Alerts"}
+          subtitle={summary?.activeHotspots ? "Density clusters active" : "No active clusters"}
           icon={Flame}
           color="#ef4444"
           onClick={() => onNavigate('gov-hotspots')}
         />
         <StatCard
           title={translate('Infrastructure Gaps', currentLang)}
-          value={summary?.infrastructureGapsIdentified || 14}
-          trend="82% Peak Deficit"
-          subtitle="Road & Healthcare connectivity"
+          value={summary?.infrastructureGapsIdentified ?? 0}
+          trend={summary?.infrastructureGapsIdentified ? "Active Deficit" : "0 Deficit"}
+          subtitle={summary?.infrastructureGapsIdentified ? "Road & Healthcare connectivity" : "No unaddressed gaps"}
           icon={Compass}
           color="#f97316"
           onClick={() => onNavigate('gov-gaps')}
         />
         <StatCard
           title={translate('Active Projects Funded', currentLang)}
-          value={summary?.projectsTracked || 4}
-          trend="$10.3M Allocated"
-          subtitle="1 Completed, 2 In Progress"
+          value={summary?.projectsTracked ?? 0}
+          trend="$0 Allocated"
+          subtitle={summary?.projectsTracked ? `${summary.projectsTracked} Active projects` : "0 Active projects"}
           icon={CheckCircle2}
           color="#10b981"
           onClick={() => onNavigate('gov-projects')}
         />
         <StatCard
           title={translate('Population Impacted', currentLang)}
-          value={summary ? `${(summary.populationImpacted / 1000).toFixed(0)}k+` : '242k+'}
-          trend="+46k this quarter"
+          value={summary?.populationImpacted ? `${(summary.populationImpacted / 1000).toFixed(0)}k+` : '0'}
+          trend="+0 this quarter"
           subtitle="Verified by post-project census"
           icon={Users}
           color="#06b6d4"
@@ -151,13 +151,19 @@ export const Dashboard = ({ onNavigate, onOpenProject, currentLang = 'en' }) => 
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {insights.slice(0, 2).map((ins) => (
-              <PriorityInsightCard
-                key={ins.id}
-                insight={ins}
-                onOpenProject={onOpenProject}
-              />
-            ))}
+            {insights.length === 0 ? (
+              <div className="glass-panel" style={{ padding: '32px 20px', textAlign: 'center' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>No AI recommendations generated yet.</p>
+              </div>
+            ) : (
+              insights.slice(0, 2).map((ins) => (
+                <PriorityInsightCard
+                  key={ins.id}
+                  insight={ins}
+                  onOpenProject={onOpenProject}
+                />
+              ))
+            )}
           </div>
         </div>
 
@@ -169,34 +175,65 @@ export const Dashboard = ({ onNavigate, onOpenProject, currentLang = 'en' }) => 
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Cross-BRICS Classification</span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {CATEGORIES.slice(0, 6).map((cat) => {
-                const count = cat.id === 'healthcare' ? 38 : cat.id === 'roads' ? 32 : cat.id === 'water' ? 24 : cat.id === 'electricity' ? 16 : 10;
+            {(() => {
+              const allReqs = storageService.getRequests();
+              const totalReqCount = summary?.totalRequests ?? allReqs.length;
+
+              if (totalReqCount === 0) {
                 return (
-                  <div key={cat.id}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
-                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{cat.label}</span>
-                      <span style={{ color: 'var(--text-muted)' }}>{count}% of requests</span>
-                    </div>
-                    <div style={{ height: '8px', width: '100%', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div
-                        style={{
-                          height: '100%',
-                          width: `${count}%`,
-                          background: cat.color,
-                          borderRadius: '4px',
-                          transition: 'width 0.4s ease'
-                        }}
-                      />
-                    </div>
+                  <div style={{ textAlign: 'center', padding: '32px 16px' }}>
+                    <Layers size={32} style={{ color: 'var(--text-muted)', margin: '0 auto 12px auto', opacity: 0.6 }} />
+                    <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px', fontSize: '0.9rem' }}>
+                      Awaiting Citizen Reports
+                    </p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', maxWidth: '320px', margin: '0 auto' }}>
+                      Sector demand distribution will compute dynamically in real-time as voice and text submissions are ingested.
+                    </p>
                   </div>
                 );
-              })}
-            </div>
+              }
+
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {CATEGORIES.slice(0, 6).map((cat) => {
+                    const matchCount = allReqs.filter(r => 
+                      (r.category || '').toLowerCase() === cat.id.toLowerCase() || 
+                      (r.category || '').toLowerCase().includes(cat.label.toLowerCase()) ||
+                      (r.subCategory || '').toLowerCase().includes(cat.id.toLowerCase())
+                    ).length;
+                    const pct = Math.round((matchCount / totalReqCount) * 100);
+
+                    return (
+                      <div key={cat.id}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
+                          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{cat.label}</span>
+                          <span style={{ color: 'var(--text-muted)' }}>{pct}% ({matchCount} reqs)</span>
+                        </div>
+                        <div style={{ height: '8px', width: '100%', background: 'var(--bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div
+                            style={{
+                              height: '100%',
+                              width: `${pct}%`,
+                              background: cat.color,
+                              borderRadius: '4px',
+                              transition: 'width 0.4s ease'
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
 
           <div style={{ marginTop: '24px', padding: '14px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', fontSize: '0.8rem' }}>
-            💡 <strong>Cross-Sector Correlation:</strong> 74% of rural healthcare complaints cite poor road connectivity as the primary factor preventing ambulance access.
+            {summary?.totalRequests ? (
+              <span>💡 <strong>Cross-Sector Correlation:</strong> High correlation detected between rural healthcare accessibility and road connectivity.</span>
+            ) : (
+              <span>💡 <strong>Cross-Sector Correlation Engine:</strong> Active and monitoring. Real-time multi-infrastructure correlations will synthesize automatically upon ingestion.</span>
+            )}
           </div>
         </div>
       </div>
@@ -230,46 +267,54 @@ export const Dashboard = ({ onNavigate, onOpenProject, currentLang = 'en' }) => 
               </tr>
             </thead>
             <tbody>
-              {recentRequests.map((req) => (
-                <tr key={req.id}>
-                  <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--accent-cyan)' }}>
-                    {req.id}
-                  </td>
-                  <td>
-                    <span className="badge badge-purple" style={{ fontSize: '0.68rem' }}>
-                      {req.inputType === 'voice' ? '🎙️ Voice' : '✍️ Text'}
-                    </span>
-                  </td>
-                  <td>
-                    <span style={{ fontSize: '0.8rem' }}>
-                      {req.language.toUpperCase()}
-                    </span>
-                  </td>
-                  <td style={{ maxWidth: '280px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {req.translatedText}
-                  </td>
-                  <td>{req.location?.district}</td>
-                  <td>
-                    <span className="badge badge-blue">{req.category}</span>
-                  </td>
-                  <td>
-                    <span className={`badge badge-${req.urgency.toLowerCase()}`}>{req.urgency}</span>
-                  </td>
-                  <td style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>
-                    {((req.confidenceScore || 0.95) * 100).toFixed(0)}%
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => setSelectedRequest(req)}
-                      className="btn btn-secondary btn-sm"
-                      style={{ padding: '4px 8px' }}
-                      title="Inspect AI extraction"
-                    >
-                      <Eye size={14} />
-                    </button>
+              {recentRequests.length === 0 ? (
+                <tr>
+                  <td colSpan="9" style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
+                    No citizen requests recorded yet.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                recentRequests.map((req) => (
+                  <tr key={req.id}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--accent-cyan)' }}>
+                      {req.id}
+                    </td>
+                    <td>
+                      <span className="badge badge-purple" style={{ fontSize: '0.68rem' }}>
+                        {req.inputType === 'voice' ? '🎙️ Voice' : '✍️ Text'}
+                      </span>
+                    </td>
+                    <td>
+                      <span style={{ fontSize: '0.8rem' }}>
+                        {req.language.toUpperCase()}
+                      </span>
+                    </td>
+                    <td style={{ maxWidth: '280px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {req.translatedText}
+                    </td>
+                    <td>{req.location?.district}</td>
+                    <td>
+                      <span className="badge badge-blue">{req.category}</span>
+                    </td>
+                    <td>
+                      <span className={`badge badge-${req.urgency.toLowerCase()}`}>{req.urgency}</span>
+                    </td>
+                    <td style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>
+                      {((req.confidenceScore || 0.95) * 100).toFixed(0)}%
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => setSelectedRequest(req)}
+                        className="btn btn-secondary btn-sm"
+                        style={{ padding: '4px 8px' }}
+                        title="Inspect AI extraction"
+                      >
+                        <Eye size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

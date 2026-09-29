@@ -88,13 +88,23 @@ export const Recommendations = ({ onNavigate, onOpenProject }) => {
 
       {/* Insights Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
-        {insights.map((ins) => (
-          <PriorityInsightCard
-            key={ins.id}
-            insight={ins}
-            onOpenProject={handleOpenProject}
-          />
-        ))}
+        {insights.length === 0 ? (
+          <div className="glass-panel" style={{ padding: '60px 20px', textAlign: 'center', gridColumn: '1 / -1' }}>
+            <Lightbulb size={48} color="var(--text-muted)" style={{ margin: '0 auto 16px' }} />
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>No Priority Insights Generated</h3>
+            <p style={{ color: 'var(--text-secondary)', maxWidth: '420px', margin: '0 auto' }}>
+              The AI recommendation engine generates project proposals once citizen demand clusters cross criticality thresholds.
+            </p>
+          </div>
+        ) : (
+          insights.map((ins) => (
+            <PriorityInsightCard
+              key={ins.id}
+              insight={ins}
+              onOpenProject={handleOpenProject}
+            />
+          ))
+        )}
       </div>
     </div>
   );

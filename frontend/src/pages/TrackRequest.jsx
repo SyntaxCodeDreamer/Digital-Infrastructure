@@ -4,7 +4,7 @@ import { api } from '../services/api';
 import { translate } from '../services/i18n';
 
 export const TrackRequest = ({ initialRequestId = '', onOpenProject, currentLang = 'en' }) => {
-  const [searchId, setSearchId] = useState(initialRequestId || 'REQ-8492');
+  const [searchId, setSearchId] = useState(initialRequestId || '');
   const [currentRequest, setCurrentRequest] = useState(null);
   const [allRequests, setAllRequests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -26,8 +26,6 @@ export const TrackRequest = ({ initialRequestId = '', onOpenProject, currentLang
     if (initialRequestId) {
       const match = list.find(r => r.id.toLowerCase() === initialRequestId.toLowerCase());
       if (match) setCurrentRequest(match);
-    } else if (list.length > 0) {
-      setCurrentRequest(list[0]);
     }
   };
 
@@ -66,30 +64,32 @@ export const TrackRequest = ({ initialRequestId = '', onOpenProject, currentLang
         </div>
 
         {/* Quick Click Samples */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{translate('Quick sample IDs:', currentLang)}</span>
-          {allRequests.slice(0, 4).map(r => (
-            <button
-              key={r.id}
-              onClick={() => {
-                setSearchId(r.id);
-                handleSearch(r.id);
-              }}
-              style={{
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '6px',
-                padding: '2px 8px',
-                fontSize: '0.75rem',
-                fontFamily: 'var(--font-mono)',
-                color: 'var(--accent-blue)',
-                cursor: 'pointer'
-              }}
-            >
-              {r.id} ({r.language})
-            </button>
-          ))}
-        </div>
+        {allRequests.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{translate('Quick sample IDs:', currentLang)}</span>
+            {allRequests.slice(0, 4).map(r => (
+              <button
+                key={r.id}
+                onClick={() => {
+                  setSearchId(r.id);
+                  handleSearch(r.id);
+                }}
+                style={{
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '6px',
+                  padding: '2px 8px',
+                  fontSize: '0.75rem',
+                  fontFamily: 'var(--font-mono)',
+                  color: 'var(--accent-blue)',
+                  cursor: 'pointer'
+                }}
+              >
+                {r.id} ({r.language})
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Request Details & Pipeline Stepper */}
@@ -220,8 +220,16 @@ export const TrackRequest = ({ initialRequestId = '', onOpenProject, currentLang
           </div>
         </div>
       ) : (
-        <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-          No citizen request found with ID "{searchId}". Please check the ID or try one of the samples above.
+        <div className="glass-panel" style={{ padding: '60px 20px', textAlign: 'center' }}>
+          <Clock size={44} color="var(--text-muted)" style={{ margin: '0 auto 16px' }} />
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>
+            {searchId ? `No citizen request found with ID "${searchId}"` : 'Enter a Citizen Request ID'}
+          </h3>
+          <p style={{ color: 'var(--text-secondary)', maxWidth: '440px', margin: '0 auto' }}>
+            {searchId
+              ? 'Please verify the ID format and try again.'
+              : 'Enter a valid citizen request tracking ID (e.g. REQ-1001) in the search field above to track its real-time pipeline status.'}
+          </p>
         </div>
       )}
     </div>
