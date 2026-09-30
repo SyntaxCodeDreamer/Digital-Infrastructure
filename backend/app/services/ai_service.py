@@ -10,7 +10,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Configure the Gemini API client
-if genai and settings.gemini_api_key:
+is_valid_key = (
+    settings.gemini_api_key 
+    and settings.gemini_api_key.strip() != "" 
+    and "your_gemini_api_key" not in settings.gemini_api_key 
+    and len(settings.gemini_api_key) > 20
+)
+
+if genai and is_valid_key:
     try:
         genai.configure(api_key=settings.gemini_api_key)
         model = genai.GenerativeModel('gemini-1.5-pro')
@@ -18,7 +25,7 @@ if genai and settings.gemini_api_key:
         logger.warning(f"Failed to configure Gemini model: {e}")
         model = None
 else:
-    logger.warning("Gemini API key is not set or client unavailable.")
+    logger.info("Gemini API key is not configured; using offline civic NLP classification fallback.")
     model = None
 
 async def analyze_citizen_request(text: str, language: str) -> dict:

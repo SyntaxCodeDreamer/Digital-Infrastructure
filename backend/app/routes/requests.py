@@ -36,21 +36,26 @@ async def get_request_by_id(request_id: str):
 async def create_request(req: CitizenRequestCreate):
     db = get_db()
     total = await db.requests.count_documents({})
-    new_id = f"REQ-{total + 8493}"
+    new_id = req.id or f"REQ-{total + 8493}"
     
-    # Analyze request using Gemini AI
+    # Analyze request using Gemini AI (with fallback if key not configured)
     ai_result = await analyze_citizen_request(req.originalText, req.language)
+
+    category = req.category if (req.category and req.category != "auto") else ai_result.get("category", "healthcare")
+    urgency = req.urgency or ai_result.get("urgency", "Medium")
+    translated = req.translatedText or ai_result.get("translatedText", req.originalText)
+    confidence = req.confidenceScore or ai_result.get("confidenceScore", 0.95)
 
     record = {
         "id": new_id,
-        "title": req.originalText[:50] + ("..." if len(req.originalText) > 50 else ""),
+        "title": req.title or (req.originalText[:50] + ("..." if len(req.originalText) > 50 else "")),
         "originalText": req.originalText,
-        "translatedText": ai_result["translatedText"],
+        "translatedText": translated,
         "language": req.language,
         "inputType": req.inputType,
-        "category": ai_result["category"],
-        "urgency": ai_result["urgency"],
-        "confidenceScore": ai_result["confidenceScore"],
+        "category": category,
+        "urgency": urgency,
+        "confidenceScore": confidence,
         "location": req.location.model_dump() if req.location else {"country": "India", "state": "Gujarat", "district": "Anand"},
         "affectedPopulation": 35000,
         "createdAt": datetime.datetime.utcnow().isoformat(),
@@ -58,14 +63,17 @@ async def create_request(req: CitizenRequestCreate):
     }
     
     await db.requests.insert_one(record)
-    record["_id"] = str(record["_id"])
+    record["_id"] = str(record.get("_id", record.get("id", "")))
     
     # Broadcast real-time notification
     if record["urgency"] in ["High", "Critical"]:
-        await manager.broadcast({
-            "type": "NEW_CRITICAL_REQUEST",
-            "message": f"New {record['urgency']} {record['category']} request in {record['location'].get('district', 'unknown')}",
-            "data": record
-        })
+        try:
+            await manager.broadcast({
+                "type": "NEW_CRITICAL_REQUEST",
+                "message": f"New {record['urgency']} {record['category']} request in {record['location'].get('district', 'unknown')}",
+                "data": record
+            })
+        except Exception:
+            pass
         
     return record

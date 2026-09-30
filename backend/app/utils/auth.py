@@ -12,6 +12,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # 1 day
 
 security = HTTPBearer()
+security_optional = HTTPBearer(auto_error=False)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     if not hashed_password:
@@ -50,4 +51,22 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         raise credentials_exception
         
     user["_id"] = str(user["_id"])
+    return user
+
+async def get_optional_user(credentials: HTTPAuthorizationCredentials = Depends(security_optional)):
+    if not credentials:
+        return None
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if not email:
+            return None
+    except jwt.PyJWTError:
+        return None
+        
+    db = get_db()
+    user = await db.users.find_one({"email": email})
+    if user:
+        user["_id"] = str(user["_id"])
     return user

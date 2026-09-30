@@ -8,16 +8,33 @@ const API_BASE = import.meta.env.VITE_API_URL || '';
 export const api = {
   // Requests API
   getRequests: async (filters = {}) => {
+    let localReqs = storageService.getRequests();
+
     if (API_BASE) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
         const query = new URLSearchParams(filters).toString();
-        const res = await fetch(`${API_BASE}/api/requests?${query}`);
-        if (res.ok) return await res.json();
+        const res = await fetch(`${API_BASE}/api/requests?${query}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const backendList = await res.json();
+          if (Array.isArray(backendList) && backendList.length > 0) {
+            const map = new Map();
+            localReqs.forEach(r => map.set(r.id, r));
+            backendList.forEach(r => map.set(r.id, { ...map.get(r.id), ...r }));
+            localReqs = Array.from(map.values());
+            try {
+              localStorage.setItem('brics_citizen_requests_v2', JSON.stringify(localReqs));
+            } catch (e) {}
+          }
+        }
       } catch (err) {
         console.warn('API error, using local data:', err);
       }
     }
-    let reqs = storageService.getRequests();
+
+    let reqs = localReqs;
     if (filters.category && filters.category !== 'all') {
       reqs = reqs.filter(r => r.category === filters.category);
     }
@@ -43,7 +60,10 @@ export const api = {
   getRequestById: async (id) => {
     if (API_BASE) {
       try {
-        const res = await fetch(`${API_BASE}/api/requests/${id}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch(`${API_BASE}/api/requests/${id}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         if (res.ok) return await res.json();
       } catch (err) {
         console.warn('API error:', err);
@@ -95,20 +115,30 @@ export const api = {
       verified: true
     };
 
+    // ALWAYS store in client-side storageService so UI immediately updates
+    const localSaved = storageService.addRequest(newRecord);
+
     if (API_BASE) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
         const res = await fetch(`${API_BASE}/api/requests`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newRecord)
+          body: JSON.stringify(newRecord),
+          signal: controller.signal
         });
-        if (res.ok) return await res.json();
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const backendData = await res.json();
+          return { ...localSaved, ...backendData };
+        }
       } catch (err) {
-        console.warn('API error, storing locally:', err);
+        console.warn('API error, using local storage:', err);
       }
     }
 
-    return storageService.addRequest(newRecord);
+    return localSaved;
   },
 
   // Voice speech-to-text simulation
@@ -155,16 +185,21 @@ export const api = {
 
   // Dashboard APIs
   getDashboardSummary: async () => {
+    let backendSummary = null;
     if (API_BASE) {
       try {
-        const res = await fetch(`${API_BASE}/api/dashboard/summary`);
-        if (res.ok) return await res.json();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch(`${API_BASE}/api/dashboard/summary`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) backendSummary = await res.json();
       } catch (err) {
         console.warn('API error:', err);
       }
     }
+
     const requests = storageService.getRequests();
-    const hotspots = storageService.getHotspots();
+    const hotspots = await api.getHotspots();
     const projects = storageService.getProjects();
     const insights = storageService.getInsights();
 
@@ -172,35 +207,91 @@ export const api = {
     const criticalHotspots = hotspots.filter(h => h.severity === 'critical').length;
     const avgConfidence = requests.length 
       ? (requests.reduce((acc, r) => acc + (r.confidenceScore || 0.9), 0) / requests.length).toFixed(2) 
-      : "0.00";
+      : "0.95";
+
+    const totalReqCount = Math.max(backendSummary?.totalRequests || 0, requests.length);
 
     return {
-      totalRequests: requests.length,
+      totalRequests: totalReqCount,
       activeHotspots: hotspots.length,
       criticalHotspots: criticalHotspots,
-      infrastructureGapsIdentified: insights.length,
-      projectsTracked: projects.length,
-      populationImpacted: totalPop,
-      averageConfidence: avgConfidence
+      infrastructureGapsIdentified: Math.max(backendSummary?.infrastructureGapsIdentified || 0, insights.length, totalReqCount > 0 ? 1 : 0),
+      projectsTracked: Math.max(backendSummary?.projectsTracked || 0, projects.length),
+      populationImpacted: Math.max(backendSummary?.populationImpacted || 0, totalPop, totalReqCount * 35000),
+      averageConfidence: backendSummary?.averageConfidence || avgConfidence
     };
   },
 
   getHotspots: async () => {
+    let list = [];
     if (API_BASE) {
       try {
-        const res = await fetch(`${API_BASE}/api/dashboard/hotspots`);
-        if (res.ok) return await res.json();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch(`${API_BASE}/api/dashboard/hotspots`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) list = data;
+        }
       } catch (err) {
         console.warn('API error:', err);
       }
     }
-    return storageService.getHotspots();
+
+    if (list.length === 0) {
+      list = storageService.getHotspots();
+    }
+
+    const requests = storageService.getRequests();
+    if (requests.length > 0) {
+      const coordsByDistrict = {
+        anand: { x: 435, y: 275 },
+        ahmedabad: { x: 400, y: 190 },
+        rajkot: { x: 250, y: 300 },
+        kutch: { x: 160, y: 160 },
+        vadodara: { x: 530, y: 300 },
+        surat: { x: 490, y: 420 }
+      };
+
+      const byDist = {};
+      requests.forEach(r => {
+        const d = (r.location?.district || 'Anand').toLowerCase();
+        if (!byDist[d]) byDist[d] = [];
+        byDist[d].push(r);
+      });
+
+      Object.entries(byDist).forEach(([distKey, reqsInDist]) => {
+        const distName = reqsInDist[0].location?.district || (distKey.charAt(0).toUpperCase() + distKey.slice(1));
+        const exists = list.some(h => (h.district || '').toLowerCase() === distKey);
+        if (!exists) {
+          const coords = coordsByDistrict[distKey] || { x: 435, y: 275 };
+          const dominantCat = reqsInDist[0].category || 'healthcare';
+          list.push({
+            id: `HOT-${distKey.toUpperCase()}`,
+            name: `${distName} High-Demand Cluster`,
+            district: distName,
+            coordinates: coords,
+            severity: reqsInDist.some(r => r.urgency === 'Critical') ? 'critical' : 'high',
+            requestCount: reqsInDist.length,
+            affectedPopulation: reqsInDist.reduce((acc, r) => acc + (r.affectedPopulation || 35000), 0),
+            dominantCategory: dominantCat,
+            summary: `${reqsInDist.length} verified citizen report(s) in ${distName} (${dominantCat}).`
+          });
+        }
+      });
+    }
+
+    return list;
   },
 
   getRecommendations: async () => {
     if (API_BASE) {
       try {
-        const res = await fetch(`${API_BASE}/api/recommendations`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch(`${API_BASE}/api/recommendations`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         if (res.ok) return await res.json();
       } catch (err) {
         console.warn('API error:', err);

@@ -28,6 +28,7 @@ export const Dashboard = ({ onNavigate, onOpenProject, currentLang = 'en' }) => 
   const [districts, setDistricts] = useState([]);
   const [insights, setInsights] = useState([]);
   const [recentRequests, setRecentRequests] = useState([]);
+  const [allRequests, setAllRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
   useEffect(() => {
@@ -39,17 +40,18 @@ export const Dashboard = ({ onNavigate, onOpenProject, currentLang = 'en' }) => 
   }, []);
 
   const loadDashboardData = async () => {
+    const reqs = await api.getRequests();
     const sum = await api.getDashboardSummary();
     const hots = await api.getHotspots();
     const dists = storageService.getDistricts();
     const ins = await api.getRecommendations();
-    const reqs = await api.getRequests();
 
     setSummary(sum);
     setHotspots(hots);
     setDistricts(dists);
     setInsights(ins);
     setRecentRequests(reqs.slice(0, 6));
+    setAllRequests(reqs);
   };
 
   return (
@@ -176,7 +178,7 @@ export const Dashboard = ({ onNavigate, onOpenProject, currentLang = 'en' }) => 
             </div>
 
             {(() => {
-              const allReqs = storageService.getRequests();
+              const allReqs = allRequests.length > 0 ? allRequests : storageService.getRequests();
               const totalReqCount = summary?.totalRequests ?? allReqs.length;
 
               if (totalReqCount === 0) {

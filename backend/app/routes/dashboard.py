@@ -1,24 +1,31 @@
 from fastapi import APIRouter, Depends
 from app.config.database import get_db
-from app.utils.auth import get_current_user
+from app.utils.auth import get_current_user, get_optional_user
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 @router.get("/summary")
-async def get_dashboard_summary(current_user: dict = Depends(get_current_user)):
+async def get_dashboard_summary(current_user: dict = Depends(get_optional_user)):
     db = get_db()
     total_requests = await db.requests.count_documents({})
+    total_projects = await db.projects.count_documents({})
+    
+    # Calculate affected population
+    cursor = db.requests.find({})
+    reqs = await cursor.to_list(1000)
+    total_pop = sum(r.get("affectedPopulation", 0) for r in reqs)
+    
     return {
-        "totalRequests": total_requests + 183,
-        "activeHotspots": 5,
-        "infrastructureGapsIdentified": 14,
-        "projectsTracked": 4,
-        "populationImpacted": 242000,
+        "totalRequests": total_requests,
+        "activeHotspots": 1 if total_requests > 0 else 0,
+        "infrastructureGapsIdentified": 1 if total_requests > 0 else 0,
+        "projectsTracked": total_projects,
+        "populationImpacted": total_pop,
         "averageConfidence": 0.95
     }
 
 @router.get("/hotspots")
-async def get_dashboard_hotspots(current_user: dict = Depends(get_current_user)):
+async def get_dashboard_hotspots(current_user: dict = Depends(get_optional_user)):
     db = get_db()
     pipeline = [
         {
