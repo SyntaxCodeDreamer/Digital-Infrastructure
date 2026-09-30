@@ -73,7 +73,7 @@ async def get_dashboard_hotspots(current_user: dict = Depends(get_optional_user)
     return hotspots
 
 @router.get("/infrastructure-gaps")
-async def get_infrastructure_gaps(current_user: dict = Depends(get_current_user)):
+async def get_infrastructure_gaps(current_user: dict = Depends(get_optional_user)):
     db = get_db()
     cursor = db.infrastructure.find({"connectivityStatus": "Poor"})
     results = await cursor.to_list(length=20)
@@ -81,9 +81,9 @@ async def get_infrastructure_gaps(current_user: dict = Depends(get_current_user)
         r["_id"] = str(r["_id"])
     return results
 
-# Registering recommendations here as it's logically part of the dashboard/analyst view
+# Registering recommendations accessible via both /api/dashboard/recommendations and /api/recommendations
 @router.get("/recommendations")
-async def get_recommendations(current_user: dict = Depends(get_current_user)):
+async def get_recommendations(current_user: dict = Depends(get_optional_user)):
     db = get_db()
     cursor = db.recommendations.find()
     results = await cursor.to_list(length=10)
@@ -109,3 +109,9 @@ async def get_recommendations(current_user: dict = Depends(get_current_user)):
     for r in results:
         r["_id"] = str(r["_id"])
     return results
+
+recommendations_router = APIRouter(prefix="/api/recommendations", tags=["recommendations"])
+
+@recommendations_router.get("")
+async def get_recommendations_root(current_user: dict = Depends(get_optional_user)):
+    return await get_recommendations(current_user=current_user)

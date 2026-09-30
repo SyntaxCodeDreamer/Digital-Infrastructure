@@ -49,6 +49,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(requests.router)
 app.include_router(dashboard.router)
+app.include_router(dashboard.recommendations_router)
 app.include_router(projects.router)
 app.include_router(ai.router)
 app.include_router(ws.router)

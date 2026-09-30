@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.schemas.project import ProjectCreate
 from app.config.database import get_db
-from app.utils.auth import get_current_user
+from app.utils.auth import get_optional_user
 import datetime
 
 router = APIRouter(prefix="/api", tags=["projects", "impact"])
 
 @router.get("/projects")
-async def get_projects(current_user: dict = Depends(get_current_user)):
+async def get_projects(current_user: dict = Depends(get_optional_user)):
     db = get_db()
     cursor = db.projects.find().sort("createdAt", -1)
     results = await cursor.to_list(length=20)
@@ -16,7 +16,7 @@ async def get_projects(current_user: dict = Depends(get_current_user)):
     return results
 
 @router.post("/projects")
-async def create_project(req: ProjectCreate, current_user: dict = Depends(get_current_user)):
+async def create_project(req: ProjectCreate, current_user: dict = Depends(get_optional_user)):
     db = get_db()
     total = await db.projects.count_documents({})
     new_id = f"PRJ-2026-{total + 1}"
@@ -32,11 +32,11 @@ async def create_project(req: ProjectCreate, current_user: dict = Depends(get_cu
     }
     
     await db.projects.insert_one(record)
-    record["_id"] = str(record["_id"])
+    record["_id"] = str(record.get("_id", record.get("id", "")))
     return record
 
 @router.get("/impact")
-async def get_impact_metrics(current_user: dict = Depends(get_current_user)):
+async def get_impact_metrics(current_user: dict = Depends(get_optional_user)):
     db = get_db()
     cursor = db.impact.find()
     results = await cursor.to_list(length=10)
@@ -58,7 +58,7 @@ async def get_impact_metrics(current_user: dict = Depends(get_current_user)):
     return results
 
 @router.get("/impact/{project_id}")
-async def get_project_impact(project_id: str, current_user: dict = Depends(get_current_user)):
+async def get_project_impact(project_id: str, current_user: dict = Depends(get_optional_user)):
     db = get_db()
     project = await db.projects.find_one({"id": project_id})
     if not project:

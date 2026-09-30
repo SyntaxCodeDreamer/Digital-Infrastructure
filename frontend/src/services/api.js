@@ -3,7 +3,11 @@
 import { storageService } from './storageService';
 import { detectLanguage, normalizeAndTranslate, classifyRequest, extractUrgency, extractEntities, findSimilarRequests } from './aiService';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+// In production on Vercel (where services share one domain and rewrite /api to the backend),
+// use relative origin (''). In local standalone dev, use import.meta.env.VITE_API_URL.
+const API_BASE = import.meta.env.PROD
+  ? (import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.includes('localhost') ? import.meta.env.VITE_API_URL : '')
+  : (import.meta.env.VITE_API_URL || '');
 
 export const api = {
   // Requests API
